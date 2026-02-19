@@ -1,12 +1,13 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { DEPARTMENTS, Department, buildStoreData, Employee, generateDefaultSchedule } from '@/data/stores';
 import ScheduleTable from '@/components/ScheduleTable';
+import EmployeeManager from '@/components/EmployeeManager';
 import { exportToExcel, printSchedule } from '@/utils/exportUtils';
 import { Button } from '@/components/ui/button';
 import {
-  Building2, LogOut, Download, Printer, ChevronDown, Calendar,
-  Users, LayoutGrid, RefreshCw, ChevronLeft, ChevronRight
+  Building2, LogOut, Download, Printer, Calendar,
+  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog
 } from 'lucide-react';
 
 const MONTHS_ES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -18,30 +19,36 @@ export default function Dashboard() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
+  const [showManager, setShowManager] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
 
-  // Build store data
+  // Build initial store data
   const storeData = currentStore ? buildStoreData(currentStore.id) : null;
+
+  // Editable employees state per department
+  const [employeesByDept, setEmployeesByDept] = useState<Record<Department, Employee[]>>(() => {
+    if (!storeData) return {} as any;
+    return { ...storeData };
+  });
 
   // Schedule state per department
   const [schedules, setSchedules] = useState<Record<Department, Record<string, Record<number, string>>>>(() => {
     if (!storeData) return {} as any;
     const init: Record<string, any> = {};
     DEPARTMENTS.forEach(dept => {
-      init[dept] = generateDefaultSchedule(storeData[dept], year, month);
+      init[dept] = generateDefaultSchedule(storeData![dept], year, month);
     });
     return init as Record<Department, Record<string, Record<number, string>>>;
   });
 
-  // Regenerate schedule when month/year changes
+  // Regenerate schedule for all departments
   const regenerate = useCallback(() => {
-    if (!storeData) return;
     const next: Record<string, any> = {};
     DEPARTMENTS.forEach(dept => {
-      next[dept] = generateDefaultSchedule(storeData[dept], year, month);
+      next[dept] = generateDefaultSchedule(employeesByDept[dept] || [], year, month);
     });
     setSchedules(next as any);
-  }, [storeData, year, month]);
+  }, [employeesByDept, year, month]);
 
   const handleScheduleChange = (employeeId: string, day: number, value: string) => {
     setSchedules(prev => ({
@@ -56,14 +63,44 @@ export default function Dashboard() {
     }));
   };
 
+  // Add employee
+  const handleAddEmployee = (emp: Employee) => {
+    const dept = emp.departamento;
+    setEmployeesByDept(prev => ({
+      ...prev,
+      [dept]: [...(prev[dept] || []), emp],
+    }));
+    // Initialize schedule for new employee
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const empSchedule: Record<number, string> = {};
+    for (let d = 1; d <= daysInMonth; d++) empSchedule[d] = 'A1';
+    setSchedules(prev => ({
+      ...prev,
+      [dept]: { ...(prev[dept] || {}), [emp.id]: empSchedule },
+    }));
+  };
+
+  // Remove employee
+  const handleRemoveEmployee = (empId: string) => {
+    setEmployeesByDept(prev => ({
+      ...prev,
+      [activeDept]: prev[activeDept].filter(e => e.id !== empId),
+    }));
+    setSchedules(prev => {
+      const deptSched = { ...(prev[activeDept] || {}) };
+      delete deptSched[empId];
+      return { ...prev, [activeDept]: deptSched };
+    });
+  };
+
   if (!currentStore || !storeData) return null;
 
-  const employees = storeData[activeDept];
+  const employees = employeesByDept[activeDept] || [];
   const schedule = schedules[activeDept] || {};
 
   const deptStats = DEPARTMENTS.map(dept => ({
     dept,
-    count: storeData[dept].length,
+    count: (employeesByDept[dept] || []).length,
     shifts: Object.values(schedules[dept] || {}).reduce((acc, empDays) => {
       Object.values(empDays).forEach(shift => {
         acc[shift] = (acc[shift] || 0) + 1;
@@ -111,10 +148,7 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <Button
-            onClick={regenerate}
-            variant="ghost"
-            size="sm"
+          <Button onClick={regenerate} variant="ghost" size="sm"
             className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <RefreshCw className="w-3.5 h-3.5" />
             Regenerar
@@ -122,8 +156,7 @@ export default function Dashboard() {
 
           <Button
             onClick={() => exportToExcel(currentStore.name, activeDept, employees, schedule, year, month)}
-            variant="ghost"
-            size="sm"
+            variant="ghost" size="sm"
             className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <Download className="w-3.5 h-3.5" />
             Excel
@@ -131,8 +164,7 @@ export default function Dashboard() {
 
           <Button
             onClick={() => printSchedule(currentStore.name, activeDept, month, year)}
-            variant="ghost"
-            size="sm"
+            variant="ghost" size="sm"
             className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <Printer className="w-3.5 h-3.5" />
             Cartelera
@@ -140,10 +172,7 @@ export default function Dashboard() {
 
           <div className="w-px h-5 mx-1 opacity-30" style={{ background: 'white' }} />
 
-          <Button
-            onClick={logout}
-            variant="ghost"
-            size="sm"
+          <Button onClick={logout} variant="ghost" size="sm"
             className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <LogOut className="w-3.5 h-3.5" />
             Salir
@@ -161,14 +190,9 @@ export default function Dashboard() {
               Departamentos
             </div>
           </div>
+
           {deptStats.map(({ dept, count }) => {
             const isActive = dept === activeDept;
-            const icons: Record<Department, React.ReactNode> = {
-              Mercado: <LayoutGrid className="w-4 h-4" />,
-              Hogar:   <LayoutGrid className="w-4 h-4" />,
-              Electro: <LayoutGrid className="w-4 h-4" />,
-              Caja:    <LayoutGrid className="w-4 h-4" />,
-            };
             return (
               <button
                 key={dept}
@@ -225,6 +249,14 @@ export default function Dashboard() {
             </div>
             <div className="flex gap-2">
               <Button
+                onClick={() => setShowManager(true)}
+                size="sm"
+                variant="outline"
+                className="gap-2 text-xs font-semibold">
+                <UserCog className="w-4 h-4" />
+                Gestionar Empleados
+              </Button>
+              <Button
                 onClick={() => exportToExcel(currentStore.name, activeDept, employees, schedule, year, month)}
                 size="sm"
                 className="gap-2 text-xs font-semibold"
@@ -256,6 +288,18 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      {/* Employee Manager Modal */}
+      {showManager && (
+        <EmployeeManager
+          employees={employees}
+          activeDept={activeDept}
+          storeId={currentStore.id}
+          onAdd={handleAddEmployee}
+          onRemove={handleRemoveEmployee}
+          onClose={() => setShowManager(false)}
+        />
+      )}
     </div>
   );
 }
