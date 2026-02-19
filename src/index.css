@@ -2,95 +2,109 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Corporate Navy & Steel palette */
+    --background: 210 20% 97%;
+    --foreground: 214 60% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 214 60% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 214 60% 10%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Deep Navy */
+    --primary: 214 65% 18%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: Steel Gray */
+    --secondary: 215 16% 90%;
+    --secondary-foreground: 214 60% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 215 20% 93%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 214 50% 28%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 214 20% 86%;
+    --input: 214 20% 88%;
+    --ring: 214 65% 28%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Shift color tokens */
+    --shift-morning: 141 71% 38%;
+    --shift-morning-bg: 141 71% 92%;
+    --shift-morning-fg: 141 71% 15%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --shift-afternoon: 33 95% 48%;
+    --shift-afternoon-bg: 33 100% 91%;
+    --shift-afternoon-fg: 33 80% 20%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --shift-intermediate: 48 95% 48%;
+    --shift-intermediate-bg: 48 100% 91%;
+    --shift-intermediate-fg: 48 80% 18%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --shift-night: 215 14% 52%;
+    --shift-night-bg: 215 14% 88%;
+    --shift-night-fg: 215 20% 22%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --shift-libre: 0 72% 51%;
+    --shift-libre-bg: 0 72% 93%;
+    --shift-libre-fg: 0 72% 25%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --shift-comp: 340 80% 45%;
+    --shift-comp-bg: 340 80% 93%;
+    --shift-comp-fg: 340 80% 20%;
 
-    --sidebar-border: 220 13% 91%;
+    --shift-lic: 240 60% 50%;
+    --shift-lic-bg: 240 60% 93%;
+    --shift-lic-fg: 240 60% 20%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --shift-vc: 200 80% 45%;
+    --shift-vc-bg: 200 80% 91%;
+    --shift-vc-fg: 200 80% 18%;
+
+    /* Sidebar */
+    --sidebar-background: 214 65% 14%;
+    --sidebar-foreground: 214 20% 85%;
+    --sidebar-primary: 214 60% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 55% 22%;
+    --sidebar-accent-foreground: 214 20% 90%;
+    --sidebar-border: 214 50% 22%;
+    --sidebar-ring: 214 60% 55%;
+
+    --navy-gradient: linear-gradient(135deg, hsl(214 65% 14%), hsl(214 55% 22%));
+    --card-shadow: 0 2px 12px hsl(214 40% 14% / 0.08);
+    --hover-shadow: 0 4px 20px hsl(214 40% 14% / 0.14);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 214 65% 8%;
+    --foreground: 210 20% 94%;
+    --card: 214 55% 12%;
+    --card-foreground: 210 20% 94%;
+    --popover: 214 55% 12%;
+    --popover-foreground: 210 20% 94%;
+    --primary: 214 60% 55%;
+    --primary-foreground: 214 65% 10%;
+    --secondary: 214 40% 18%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 214 40% 16%;
+    --muted-foreground: 215 16% 60%;
+    --accent: 214 50% 28%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 35% 22%;
+    --input: 214 35% 20%;
+    --ring: 214 60% 55%;
   }
 }
 
@@ -98,8 +112,27 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
   }
+}
+
+/* Shift cell styles */
+.shift-A { background-color: hsl(var(--shift-morning-bg)); color: hsl(var(--shift-morning-fg)); font-weight: 600; }
+.shift-C { background-color: hsl(var(--shift-afternoon-bg)); color: hsl(var(--shift-afternoon-fg)); font-weight: 600; }
+.shift-I { background-color: hsl(var(--shift-intermediate-bg)); color: hsl(var(--shift-intermediate-fg)); font-weight: 600; }
+.shift-N { background-color: hsl(var(--shift-night-bg)); color: hsl(var(--shift-night-fg)); font-weight: 600; }
+.shift-LIBRE { background-color: hsl(var(--shift-libre-bg)); color: hsl(var(--shift-libre-fg)); font-weight: 700; }
+.shift-COMP { background-color: hsl(var(--shift-comp-bg)); color: hsl(var(--shift-comp-fg)); font-weight: 700; }
+.shift-LIC { background-color: hsl(var(--shift-lic-bg)); color: hsl(var(--shift-lic-fg)); font-weight: 600; }
+.shift-VC { background-color: hsl(var(--shift-vc-bg)); color: hsl(var(--shift-vc-fg)); font-weight: 600; }
+.shift-DF { background-color: hsl(215 14% 88%); color: hsl(215 20% 30%); font-weight: 500; }
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white; }
+  .schedule-table { font-size: 8px; }
 }
