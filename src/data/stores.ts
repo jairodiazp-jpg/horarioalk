@@ -40,7 +40,7 @@ export const STORES: Store[] = [
   { id: 'ktmay',  name: 'KTMAY',   password: 'KTMAY' },
   { id: 'ktsba',  name: 'KTSBA',   password: 'KTSBA' },
   { id: 'ktchi',  name: 'KTCHI',   password: 'KTCHI' },
-  { id: 'ktmos',  name: 'KTMOS}',  password: 'KTMOS}' },
+  { id: 'ktmos',  name: 'KTMOS',   password: 'KTMOS' },
   { id: 'ktnqs',  name: 'KTNQS',   password: 'KTNQS' },
   { id: 'ktvil',  name: 'KTVIL',   password: 'KTVIL' },
   { id: 'ktcal',  name: 'KTCAL',   password: 'KTCAL' },
