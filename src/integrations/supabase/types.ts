@@ -14,7 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      employees: {
+        Row: {
+          actividad: string
+          codigo: string
+          created_at: string
+          departamento: string
+          id: string
+          nombre: string
+          store_id: string
+        }
+        Insert: {
+          actividad: string
+          codigo: string
+          created_at?: string
+          departamento: string
+          id: string
+          nombre: string
+          store_id: string
+        }
+        Update: {
+          actividad?: string
+          codigo?: string
+          created_at?: string
+          departamento?: string
+          id?: string
+          nombre?: string
+          store_id?: string
+        }
+        Relationships: []
+      }
+      schedule_entries: {
+        Row: {
+          created_at: string
+          day: number
+          departamento: string
+          employee_id: string
+          id: string
+          month: number
+          shift_code: string
+          store_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          day: number
+          departamento: string
+          employee_id: string
+          id?: string
+          month: number
+          shift_code: string
+          store_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          day?: number
+          departamento?: string
+          employee_id?: string
+          id?: string
+          month?: number
+          shift_code?: string
+          store_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
