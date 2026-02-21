@@ -4,6 +4,7 @@ import { DEPARTMENTS, Department, buildStoreData, Employee, generateDefaultSched
 import ScheduleTable from '@/components/ScheduleTable';
 import EmployeeManager from '@/components/EmployeeManager';
 import { exportToExcel, printSchedule } from '@/utils/exportUtils';
+import AIChatPanel from '@/components/AIChatPanel';
 import { Button } from '@/components/ui/button';
 import {
   Building2, LogOut, Download, Printer, Calendar,
@@ -300,6 +301,18 @@ export default function Dashboard() {
           onClose={() => setShowManager(false)}
         />
       )}
+
+      {/* AI Chat Panel */}
+      <AIChatPanel
+        employees={employees}
+        year={year}
+        month={month}
+        onApplyActions={(actions) => {
+          actions.forEach(a => {
+            handleScheduleChange(a.employeeId, a.day, a.newShift);
+          });
+        }}
+      />
     </div>
   );
 }
