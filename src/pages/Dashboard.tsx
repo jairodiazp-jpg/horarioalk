@@ -1,14 +1,15 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { DEPARTMENTS, Department, buildStoreData, Employee, generateDefaultSchedule } from '@/data/stores';
+import { DEPARTMENTS, Department } from '@/data/stores';
 import ScheduleTable from '@/components/ScheduleTable';
 import EmployeeManager from '@/components/EmployeeManager';
 import { exportToExcel, printSchedule } from '@/utils/exportUtils';
 import AIChatPanel from '@/components/AIChatPanel';
+import { useSchedulePersistence } from '@/hooks/useSchedulePersistence';
 import { Button } from '@/components/ui/button';
 import {
   Building2, LogOut, Download, Printer, Calendar,
-  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog
+  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2
 } from 'lucide-react';
 
 const MONTHS_ES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -23,78 +24,36 @@ export default function Dashboard() {
   const [showManager, setShowManager] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
 
-  // Build initial store data
-  const storeData = currentStore ? buildStoreData(currentStore.id) : null;
-
-  // Editable employees state per department
-  const [employeesByDept, setEmployeesByDept] = useState<Record<Department, Employee[]>>(() => {
-    if (!storeData) return {} as any;
-    return { ...storeData };
-  });
-
-  // Schedule state per department
-  const [schedules, setSchedules] = useState<Record<Department, Record<string, Record<number, string>>>>(() => {
-    if (!storeData) return {} as any;
-    const init: Record<string, any> = {};
-    DEPARTMENTS.forEach(dept => {
-      init[dept] = generateDefaultSchedule(storeData![dept], year, month);
-    });
-    return init as Record<Department, Record<string, Record<number, string>>>;
-  });
-
-  // Regenerate schedule for all departments
-  const regenerate = useCallback(() => {
-    const next: Record<string, any> = {};
-    DEPARTMENTS.forEach(dept => {
-      next[dept] = generateDefaultSchedule(employeesByDept[dept] || [], year, month);
-    });
-    setSchedules(next as any);
-  }, [employeesByDept, year, month]);
+  const {
+    employeesByDept, schedules, loading, initialized,
+    changeShift, addEmployee, removeEmployee, regenerate, clearScheduleData,
+  } = useSchedulePersistence(currentStore?.id, year, month);
 
   const handleScheduleChange = (employeeId: string, day: number, value: string) => {
-    setSchedules(prev => ({
-      ...prev,
-      [activeDept]: {
-        ...prev[activeDept],
-        [employeeId]: {
-          ...prev[activeDept][employeeId],
-          [day]: value,
-        },
-      },
-    }));
+    changeShift(activeDept, employeeId, day, value);
   };
 
-  // Add employee
-  const handleAddEmployee = (emp: Employee) => {
-    const dept = emp.departamento;
-    setEmployeesByDept(prev => ({
-      ...prev,
-      [dept]: [...(prev[dept] || []), emp],
-    }));
-    // Initialize schedule for new employee
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const empSchedule: Record<number, string> = {};
-    for (let d = 1; d <= daysInMonth; d++) empSchedule[d] = 'A1';
-    setSchedules(prev => ({
-      ...prev,
-      [dept]: { ...(prev[dept] || {}), [emp.id]: empSchedule },
-    }));
+  const handleExportExcel = async () => {
+    exportToExcel(currentStore!.name, activeDept, employees, schedule, year, month);
+    await clearScheduleData();
   };
 
-  // Remove employee
-  const handleRemoveEmployee = (empId: string) => {
-    setEmployeesByDept(prev => ({
-      ...prev,
-      [activeDept]: prev[activeDept].filter(e => e.id !== empId),
-    }));
-    setSchedules(prev => {
-      const deptSched = { ...(prev[activeDept] || {}) };
-      delete deptSched[empId];
-      return { ...prev, [activeDept]: deptSched };
-    });
+  const handlePrint = async () => {
+    printSchedule(currentStore!.name, activeDept, month, year);
+    await clearScheduleData();
   };
 
-  if (!currentStore || !storeData) return null;
+  if (!currentStore) return null;
+  if (loading && !initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'hsl(var(--background))' }}>
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'hsl(var(--primary))' }} />
+          <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Cargando horarios...</p>
+        </div>
+      </div>
+    );
+  }
 
   const employees = employeesByDept[activeDept] || [];
   const schedule = schedules[activeDept] || {};
@@ -130,7 +89,6 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Month navigation */}
           <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
             style={{ background: 'hsl(214 50% 22%)' }}>
             <button
@@ -155,17 +113,13 @@ export default function Dashboard() {
             Regenerar
           </Button>
 
-          <Button
-            onClick={() => exportToExcel(currentStore.name, activeDept, employees, schedule, year, month)}
-            variant="ghost" size="sm"
+          <Button onClick={handleExportExcel} variant="ghost" size="sm"
             className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <Download className="w-3.5 h-3.5" />
             Excel
           </Button>
 
-          <Button
-            onClick={() => printSchedule(currentStore.name, activeDept, month, year)}
-            variant="ghost" size="sm"
+          <Button onClick={handlePrint} variant="ghost" size="sm"
             className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <Printer className="w-3.5 h-3.5" />
             Cartelera
@@ -238,7 +192,6 @@ export default function Dashboard() {
 
         {/* Main content */}
         <main className="flex-1 flex flex-col overflow-hidden p-5">
-          {/* Department header */}
           <div className="flex items-center justify-between mb-4 no-print">
             <div>
               <h1 className="text-xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>
@@ -258,7 +211,7 @@ export default function Dashboard() {
                 Gestionar Empleados
               </Button>
               <Button
-                onClick={() => exportToExcel(currentStore.name, activeDept, employees, schedule, year, month)}
+                onClick={handleExportExcel}
                 size="sm"
                 className="gap-2 text-xs font-semibold"
                 style={{ background: 'hsl(141 71% 38%)', color: 'white' }}>
@@ -266,7 +219,7 @@ export default function Dashboard() {
                 Exportar Excel
               </Button>
               <Button
-                onClick={() => printSchedule(currentStore.name, activeDept, month, year)}
+                onClick={handlePrint}
                 size="sm"
                 variant="outline"
                 className="gap-2 text-xs font-semibold">
@@ -276,7 +229,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Schedule table */}
           <div className="flex-1 overflow-hidden">
             <ScheduleTable
               employees={employees}
@@ -290,19 +242,17 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {/* Employee Manager Modal */}
       {showManager && (
         <EmployeeManager
           employees={employees}
           activeDept={activeDept}
           storeId={currentStore.id}
-          onAdd={handleAddEmployee}
-          onRemove={handleRemoveEmployee}
+          onAdd={addEmployee}
+          onRemove={(empId) => removeEmployee(activeDept, empId)}
           onClose={() => setShowManager(false)}
         />
       )}
 
-      {/* AI Chat Panel */}
       <AIChatPanel
         employees={employees}
         year={year}
