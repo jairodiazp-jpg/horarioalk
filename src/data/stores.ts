@@ -107,39 +107,57 @@ function makeEmployees(storeName: string, dept: Department, offset: number): Emp
   }));
 }
 
-const SAMPLE_MORNING = ['LIBRE', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1'];
-const SAMPLE_AFTERNOON = ['LIBRE', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'];
-const SAMPLE_NIGHT = ['LIBRE', 'N10', 'N10', 'N10', 'N10', 'N10', 'N10'];
+const MORNING_CODES = ['A1', 'A', 'A3', 'A4', 'A6', 'A7', 'A2', 'A10'];
+const AFTERNOON_CODES = ['C1', 'C', 'C2', 'C3', 'I', 'I1', 'I2', 'I3', 'I4', 'C5', 'C6', 'C7', 'C8'];
+const NIGHT_CODES = ['N10', 'N1', 'N', 'N14'];
 
 export function generateDefaultSchedule(employees: Employee[], year: number, month: number) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const schedule: Record<string, Record<number, string>> = {};
 
+  // First day of month to calculate week boundaries
+  const firstDate = new Date(year, month - 1, 1);
+  // Get the Monday of the week containing day 1
+  const firstDow = firstDate.getDay(); // 0=Sun..6=Sat
+
   employees.forEach((emp, idx) => {
     schedule[emp.id] = {};
-    const isNight = idx >= 38;
-    const isAfternoon = !isNight && idx >= 18;
-    const baseMorning = SAMPLE_MORNING;
-    const baseAfternoon = SAMPLE_AFTERNOON;
-    const baseNight = SAMPLE_NIGHT;
+    const isNight = idx >= 38; // last 2 employees = night
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month - 1, day);
       const dow = date.getDay(); // 0=Sun, 1=Mon...6=Sat
-      let base: string[];
-      if (isNight) base = baseNight;
-      else if (isAfternoon) base = baseAfternoon;
-      else base = baseMorning;
 
-      // Assign LIBRE on weekdays, rotating per employee
+      // Calculate week number within the month (0-based)
+      const weekNum = Math.floor((day + (firstDow === 0 ? 6 : firstDow - 1) - 1) / 7);
+
+      // LIBRE assignment: 1 day Mon-Fri per employee, rotating
       const libreDay = ((idx % 5) + 1); // 1=Mon...5=Fri
       if (dow === libreDay) {
         schedule[emp.id][day] = 'LIBRE';
-      } else if (dow === 0 && isNight) {
-        schedule[emp.id][day] = 'LIBRE';
+        continue;
+      }
+
+      // Night shift employees stay on night
+      if (isNight) {
+        if (dow === 0) {
+          schedule[emp.id][day] = 'LIBRE';
+        } else {
+          schedule[emp.id][day] = NIGHT_CODES[idx % NIGHT_CODES.length];
+        }
+        continue;
+      }
+
+      // For the 38 non-night employees: split into 2 groups for weekly rotation
+      // Group A (idx 0-18): even weeks = morning, odd weeks = afternoon
+      // Group B (idx 19-37): even weeks = afternoon, odd weeks = morning
+      const isGroupA = idx < 19;
+      const isMorningWeek = (weekNum % 2 === 0) ? isGroupA : !isGroupA;
+
+      if (isMorningWeek) {
+        schedule[emp.id][day] = MORNING_CODES[idx % MORNING_CODES.length];
       } else {
-        const shift = base[day % base.length] !== 'LIBRE' ? base[day % base.length] : (isNight ? 'N10' : isAfternoon ? 'C1' : 'A1');
-        schedule[emp.id][day] = shift;
+        schedule[emp.id][day] = AFTERNOON_CODES[idx % AFTERNOON_CODES.length];
       }
     }
   });
