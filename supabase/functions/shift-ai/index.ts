@@ -5,64 +5,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-function extractJson(raw: string): any {
-  let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-  const start = cleaned.search(/[\{\[]/);
-  if (start === -1) return { actions: [], explanation: raw };
-  cleaned = cleaned.substring(start);
-
-  // Try direct parse
-  try { return JSON.parse(cleaned); } catch { /* continue */ }
-
-  // Fix trailing commas and control chars
-  cleaned = cleaned
-    .replace(/,\s*}/g, '}')
-    .replace(/,\s*]/g, ']')
-    .replace(/[\x00-\x1F\x7F]/g, '');
-
-  try { return JSON.parse(cleaned); } catch { /* continue */ }
-
-  // Handle truncated JSON: try to close open structures
-  let braces = 0, brackets = 0;
-  for (const ch of cleaned) {
-    if (ch === '{') braces++;
-    if (ch === '}') braces--;
-    if (ch === '[') brackets++;
-    if (ch === ']') brackets--;
-  }
-
-  // Remove trailing incomplete object (after last comma)
-  let repaired = cleaned.replace(/,\s*\{[^}]*$/, '');
-  
-  // Close remaining open brackets/braces
-  braces = 0; brackets = 0;
-  for (const ch of repaired) {
-    if (ch === '{') braces++;
-    if (ch === '}') braces--;
-    if (ch === '[') brackets++;
-    if (ch === ']') brackets--;
-  }
-  while (brackets > 0) { repaired += ']'; brackets--; }
-  while (braces > 0) { repaired += '}'; braces--; }
-
-  try { return JSON.parse(repaired); } catch {
-    return { actions: [], explanation: raw.substring(0, 200) };
-  }
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message, employees, currentDate, daysInMonth } = await req.json();
-    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
-    if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY is not configured");
+    const { message, employees, currentDate, daysInMonth, conversationHistory } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const employeeList = (employees || []).map((e: any) => `- ID: ${e.id}, Código: ${e.codigo}, Nombre: ${e.nombre}`).join('\n');
 
-    const systemPrompt = `Eres un asistente de gestión de horarios de una tienda. Tu trabajo es interpretar solicitudes de cambio de turno y devolver instrucciones estructuradas en JSON.
+    const systemPrompt = `Eres un asistente inteligente para gestión de horarios de tiendas. Puedes:
+
+1. RESPONDER PREGUNTAS GENERALES sobre horarios, turnos, gestión de personal, etc.
+2. REALIZAR CAMBIOS DE TURNOS cuando el usuario lo solicite.
 
 Fecha actual del calendario: ${currentDate || 'no especificada'}
 Días en el mes actual: ${daysInMonth || 30}
@@ -75,56 +33,89 @@ Turnos disponibles:
 - Intermedio: I, I1, I2, I3, I4, I5, I9, I10, I11, I15, I16, I19, I25, I26
 - Tarde: C, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10
 - Noche: N, N1, N3, N10, N11, N12, N14
-- Especiales: LIBRE, COMP, LIC, VC, DF
+- Especiales: LIBRE (día libre), COMP (compensatorio), LIC (licencia), VC (vacaciones), DF (día festivo)
 
-CAMBIOS MASIVOS — Instrucciones importantes:
-- Si el usuario dice "todo el equipo", "todos", "a todos los empleados", genera una acción por CADA empleado de la lista.
-- Si dice "del lunes al viernes" o "toda la semana", genera acciones para CADA día indicado.
-- Si dice "del día 1 al 15", genera acciones para cada día del 1 al 15.
-- Puedes generar MUCHAS acciones en un solo JSON. No hay límite.
+REGLAS para cambios de turno:
+- Si dice "todo el equipo", "todos", genera una acción por CADA empleado.
+- Si dice "del lunes al viernes", "toda la semana", genera para CADA día indicado.
+- Si dice "del día 1 al 15", genera para cada día del 1 al 15.
+- Si dice "mañana" sin código, usa A1. "tarde" = C1. "noche" = N10.
+- Busca empleados por nombre parcial (ej: "Carlos" = primer empleado con CARLOS).
 
-Responde SIEMPRE con un JSON válido con esta estructura:
-{
-  "actions": [
-    { "employeeId": "id_del_empleado", "employeeName": "nombre", "day": numero_dia, "newShift": "CODIGO_TURNO" }
-  ],
-  "explanation": "Explicación breve de lo que se hizo"
-}
+Sé conversacional, amable y útil. Puedes responder preguntas, dar consejos de gestión, explicar turnos, etc.`;
 
-Si no puedes identificar al empleado o la fecha, responde con:
-{ "actions": [], "explanation": "No pude identificar... (razón)" }
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "apply_shift_changes",
+          description: "Aplica cambios de turno a uno o más empleados. Usa esta función SOLO cuando el usuario solicite cambios concretos de turno.",
+          parameters: {
+            type: "object",
+            properties: {
+              actions: {
+                type: "array",
+                description: "Lista de cambios de turno a aplicar",
+                items: {
+                  type: "object",
+                  properties: {
+                    employeeId: { type: "string", description: "ID del empleado" },
+                    employeeName: { type: "string", description: "Nombre del empleado" },
+                    day: { type: "number", description: "Día del mes (1-31)" },
+                    newShift: { type: "string", description: "Código del nuevo turno" },
+                  },
+                  required: ["employeeId", "employeeName", "day", "newShift"],
+                  additionalProperties: false,
+                },
+              },
+              explanation: { type: "string", description: "Explicación breve de los cambios realizados" },
+            },
+            required: ["actions", "explanation"],
+            additionalProperties: false,
+          },
+        },
+      },
+    ];
 
-Reglas:
-- Si el usuario dice "mañana" sin especificar código, usa A1.
-- Si dice "tarde", usa C1.
-- Si dice "noche", usa N10.
-- Busca al empleado por nombre parcial (ej. "Carlos" = primer empleado que contenga CARLOS).
-- Responde SOLO con el JSON, sin texto adicional ni markdown.`;
+    // Build messages array with conversation history
+    const aiMessages: any[] = [
+      { role: "system", content: systemPrompt },
+    ];
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    if (conversationHistory && conversationHistory.length > 0) {
+      for (const msg of conversationHistory) {
+        aiMessages.push({ role: msg.role, content: msg.content });
+      }
+    }
+
+    aiMessages.push({ role: "user", content: message });
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: message },
-        ],
-        temperature: 0.1,
-        max_tokens: 16000,
+        model: "google/gemini-2.5-flash",
+        messages: aiMessages,
+        tools,
+        tool_choice: "auto",
       }),
     });
 
     if (!response.ok) {
       const status = response.status;
       const t = await response.text();
-      console.error("Groq API error:", status, t);
+      console.error("AI gateway error:", status, t);
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Demasiadas solicitudes. Intenta de nuevo en unos segundos." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (status === 402) {
+        return new Response(JSON.stringify({ error: "Créditos agotados. Recarga tu saldo en Lovable." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       return new Response(JSON.stringify({ error: "Error del servicio de IA" }), {
@@ -133,21 +124,42 @@ Reglas:
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '{"actions":[],"explanation":"Sin respuesta"}';
-    const finishReason = data.choices?.[0]?.finish_reason;
+    const choice = data.choices?.[0];
 
-    console.log("Groq finish_reason:", finishReason, "content length:", content.length);
-
-    const parsed = extractJson(content);
-
-    // Warn if truncated
-    if (finishReason === 'length' && parsed.actions?.length > 0) {
-      parsed.explanation = (parsed.explanation || '') + ` ⚠️ Respuesta truncada, se aplicaron ${parsed.actions.length} cambios parciales.`;
+    // Check if the model used tool calling
+    if (choice?.message?.tool_calls?.length > 0) {
+      const toolCall = choice.message.tool_calls[0];
+      if (toolCall.function.name === "apply_shift_changes") {
+        try {
+          const args = JSON.parse(toolCall.function.arguments);
+          return new Response(JSON.stringify({
+            type: "schedule_change",
+            actions: args.actions || [],
+            explanation: args.explanation || "Cambios aplicados.",
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        } catch (parseErr) {
+          console.error("Tool call parse error:", parseErr);
+          return new Response(JSON.stringify({
+            type: "chat",
+            content: "Hubo un error procesando los cambios. Intenta de nuevo.",
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
     }
 
-    return new Response(JSON.stringify(parsed), {
+    // Regular chat response
+    const content = choice?.message?.content || "No pude generar una respuesta.";
+    return new Response(JSON.stringify({
+      type: "chat",
+      content,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (e) {
     console.error("shift-ai error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }), {
