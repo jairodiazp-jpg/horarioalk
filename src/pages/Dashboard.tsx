@@ -8,9 +8,10 @@ import AIChatPanel from '@/components/AIChatPanel';
 import { useSchedulePersistence } from '@/hooks/useSchedulePersistence';
 import { Button } from '@/components/ui/button';
 import {
-  Building2, LogOut, Download, Printer, Calendar,
+  LogOut, Download, Printer, Calendar,
   Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2
 } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 const MONTHS_ES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -78,15 +79,12 @@ export default function Dashboard() {
       {/* Top Navbar */}
       <header className="flex items-center justify-between px-6 py-3 shadow-md no-print"
         style={{ background: 'hsl(214 65% 14%)', borderBottom: '1px solid hsl(214 50% 22%)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="text-white font-bold text-sm tracking-wide">SchedPro</div>
-            <div className="text-white/50 text-[10px] uppercase tracking-wider">{currentStore.name}</div>
-          </div>
-        </div>
+         <div className="flex items-center gap-3">
+           <img src={logo} alt="Logo" className="h-8 object-contain" />
+           <div>
+             <div className="text-white/50 text-[10px] uppercase tracking-wider">{currentStore.name}</div>
+           </div>
+         </div>
 
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
