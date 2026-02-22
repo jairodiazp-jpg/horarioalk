@@ -4,7 +4,8 @@ import { STORES } from '@/data/stores';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Building2, Lock, User } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -28,12 +29,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex" style={{ background: 'hsl(var(--primary))' }}>
       {/* Left panel - branding */}
       <div className="hidden lg:flex flex-col justify-between w-2/5 p-12" style={{ background: 'hsl(214 65% 12%)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-white font-bold text-xl tracking-wide">SchedPro</span>
-        </div>
+         <div className="flex items-center gap-3">
+           <img src={logo} alt="Logo" className="h-10 object-contain" />
+         </div>
         <div>
           <h1 className="text-4xl font-bold text-white leading-tight mb-4">
             Gestión de Horarios<br/>para Grandes Cadenas
@@ -63,11 +61,8 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'hsl(var(--primary))' }}>
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <span className="font-bold text-xl" style={{ color: 'hsl(var(--primary))' }}>SchedPro</span>
-          </div>
+             <img src={logo} alt="Logo" className="h-10 object-contain" />
+           </div>
 
           <h2 className="text-3xl font-bold mb-2" style={{ color: 'hsl(var(--foreground))' }}>
             Acceso a Panel
