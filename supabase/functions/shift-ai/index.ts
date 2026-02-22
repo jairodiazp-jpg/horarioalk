@@ -11,15 +11,16 @@ serve(async (req) => {
   }
 
   try {
-    const { message, employees, currentDate } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const { message, employees, currentDate, daysInMonth } = await req.json();
+    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+    if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY is not configured");
 
     const employeeList = (employees || []).map((e: any) => `- ID: ${e.id}, Código: ${e.codigo}, Nombre: ${e.nombre}`).join('\n');
 
     const systemPrompt = `Eres un asistente de gestión de horarios de una tienda. Tu trabajo es interpretar solicitudes de cambio de turno y devolver instrucciones estructuradas en JSON.
 
 Fecha actual del calendario: ${currentDate || 'no especificada'}
+Días en el mes actual: ${daysInMonth || 30}
 
 Empleados disponibles en el departamento actual:
 ${employeeList}
@@ -30,6 +31,13 @@ Turnos disponibles:
 - Tarde: C, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10
 - Noche: N, N1, N3, N10, N11, N12, N14
 - Especiales: LIBRE, COMP, LIC, VC, DF
+
+CAMBIOS MASIVOS — Instrucciones importantes:
+- Si el usuario dice "todo el equipo", "todos", "a todos los empleados", genera una acción por CADA empleado de la lista.
+- Si dice "del lunes al viernes" o "toda la semana", genera acciones para CADA día indicado. Calcula los días del mes que corresponden a esos días de la semana.
+- Si dice "del día 1 al 15", genera acciones para cada día del 1 al 15.
+- Puedes generar MUCHAS acciones en un solo JSON. No hay límite.
+- Ejemplo: "Pon a todo el equipo en A1 del día 1 al 5" → genera N empleados × 5 días = N×5 acciones.
 
 Cuando el usuario pida un cambio de turno, responde SIEMPRE con un JSON válido con esta estructura:
 {
@@ -51,18 +59,20 @@ Reglas:
 - Si dice "esta semana" calcula los días basándote en la fecha actual.
 - Responde SOLO con el JSON, sin texto adicional ni markdown.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: message },
         ],
+        temperature: 0.1,
+        max_tokens: 8000,
       }),
     });
 
@@ -73,13 +83,13 @@ Reglas:
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos de IA agotados." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (status === 402 || status === 401) {
+        return new Response(JSON.stringify({ error: "Error de autenticación con Groq. Verifica tu API key." }), {
+          status: status, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const t = await response.text();
-      console.error("AI gateway error:", status, t);
+      console.error("Groq API error:", status, t);
       return new Response(JSON.stringify({ error: "Error del servicio de IA" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -88,10 +98,8 @@ Reglas:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '{"actions":[],"explanation":"Sin respuesta"}';
 
-    // Try to parse the AI response as JSON
     let parsed;
     try {
-      // Strip markdown code fences if present
       const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       parsed = JSON.parse(cleaned);
     } catch {

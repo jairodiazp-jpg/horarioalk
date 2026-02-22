@@ -50,11 +50,13 @@ export default function AIChatPanel({ employees, year, month, onApplyActions }: 
     setLoading(true);
 
     try {
+      const daysInMonth = new Date(year, month, 0).getDate();
       const { data, error } = await supabase.functions.invoke('shift-ai', {
         body: {
           message: text,
           employees: employees.map(e => ({ id: e.id, codigo: e.codigo, nombre: e.nombre })),
           currentDate: `${MONTHS_ES[month]} ${year}`,
+          daysInMonth,
         },
       });
 
@@ -117,6 +119,7 @@ export default function AIChatPanel({ employees, year, month, onApplyActions }: 
             <Bot className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <p className="text-xs">Escribe qué turno quieres cambiar.</p>
             <p className="text-[10px] mt-1 opacity-70">Ej: "Ponle turno de tarde a Carlos el día 15"</p>
+            <p className="text-[10px] opacity-70">Ej masivo: "Pon a todos en A1 del día 1 al 5"</p>
           </div>
         )}
         {messages.map((msg, i) => (
