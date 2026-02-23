@@ -84,7 +84,7 @@ export default function Dashboard() {
          <div className="flex items-center gap-3">
            <img alt="Logo" className="h-8 object-contain rounded-lg border-0" src="https://www.alkosto.com/medias/alkosto-logo-header.svg?context=bWFzdGVyfEljb25vcy1NZWdhbWVudS1BS3w4NTcxfGltYWdlL3N2Zyt4bWx8YURnMkwyZ3hZeTh4TkRreU1UWTFPRFE1T1RFd01pOWhiR3R2YzNSdkxXeHZaMjh0YUdWaFpHVnlMbk4yWnd8NzM0YjM2ZDc0Y2FhMzdkMGVjZGRmMDE0NmJjNzI5NTI3OWE2ODM0MzU1MzZiZWJkZjAzNzY3ZDg1Mjk3MTZiNw" />
            <div>
-             <div className="text-white/50 text-[10px] uppercase tracking-wider">{currentStore.name}</div>
+             <div className="text-[10px] uppercase tracking-wider text-primary-foreground bg-primary">{currentStore.name}</div>
            </div>
          </div>
 
