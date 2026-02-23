@@ -114,44 +114,57 @@ const NIGHT_CODES = ['N10', 'N1', 'N', 'N14'];
 export function generateDefaultSchedule(employees: Employee[], year: number, month: number) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const schedule: Record<string, Record<number, string>> = {};
+  const totalEmps = employees.length;
+  if (totalEmps === 0) return schedule;
 
-  // First day of month to calculate week boundaries
+  // Reserve 2 employees for night shift (last 2), rest split morning/afternoon
+  const nightCount = Math.min(2, totalEmps);
+  const dayEmployees = employees.slice(0, totalEmps - nightCount);
+  const nightEmployees = employees.slice(totalEmps - nightCount);
+
+  // Split day employees into two groups for weekly rotation
+  const halfPoint = Math.ceil(dayEmployees.length / 2);
+  const groupA = dayEmployees.slice(0, halfPoint);   // Even weeks = morning
+  const groupB = dayEmployees.slice(halfPoint);       // Even weeks = afternoon
+
+  // First day info for week calculation
   const firstDate = new Date(year, month - 1, 1);
-  // Get the Monday of the week containing day 1
   const firstDow = firstDate.getDay(); // 0=Sun..6=Sat
 
-  employees.forEach((emp, idx) => {
+  // Distribute LIBRE days (Mon=1..Fri=5) across employees so no day is overloaded
+  // Each employee gets a fixed LIBRE weekday that rotates across weeks
+  const assignLibreDay = (empIdx: number, weekNum: number): number => {
+    // Rotate: each employee shifts their libre day each week for equity
+    return ((empIdx + weekNum) % 5) + 1; // 1=Mon..5=Fri
+  };
+
+  // --- Day employees ---
+  dayEmployees.forEach((emp, idx) => {
     schedule[emp.id] = {};
-    const isNight = idx >= 38; // last 2 employees = night
+    const isGroupA = idx < halfPoint;
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month - 1, day);
-      const dow = date.getDay(); // 0=Sun, 1=Mon...6=Sat
-
-      // Calculate week number within the month (0-based)
+      const dow = date.getDay();
       const weekNum = Math.floor((day + (firstDow === 0 ? 6 : firstDow - 1) - 1) / 7);
 
-      // LIBRE assignment: 1 day Mon-Fri per employee, rotating
-      const libreDay = ((idx % 5) + 1); // 1=Mon...5=Fri
-      if (dow === libreDay) {
+      // LIBRE: one day Mon-Fri per week, distributed
+      const libreWeekday = assignLibreDay(idx, weekNum);
+      if (dow === libreWeekday) {
         schedule[emp.id][day] = 'LIBRE';
         continue;
       }
 
-      // Night shift employees stay on night
-      if (isNight) {
-        if (dow === 0) {
+      // Sunday: some work, some rest based on rotation
+      if (dow === 0) {
+        // Every other Sunday off for equity
+        if ((weekNum + idx) % 3 === 0) {
           schedule[emp.id][day] = 'LIBRE';
-        } else {
-          schedule[emp.id][day] = NIGHT_CODES[idx % NIGHT_CODES.length];
+          continue;
         }
-        continue;
       }
 
-      // For the 38 non-night employees: split into 2 groups for weekly rotation
-      // Group A (idx 0-18): even weeks = morning, odd weeks = afternoon
-      // Group B (idx 19-37): even weeks = afternoon, odd weeks = morning
-      const isGroupA = idx < 19;
+      // Weekly rotation: morning <-> afternoon
       const isMorningWeek = (weekNum % 2 === 0) ? isGroupA : !isGroupA;
 
       if (isMorningWeek) {
@@ -159,6 +172,31 @@ export function generateDefaultSchedule(employees: Employee[], year: number, mon
       } else {
         schedule[emp.id][day] = AFTERNOON_CODES[idx % AFTERNOON_CODES.length];
       }
+    }
+  });
+
+  // --- Night employees ---
+  nightEmployees.forEach((emp, idx) => {
+    schedule[emp.id] = {};
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month - 1, day);
+      const dow = date.getDay();
+      const weekNum = Math.floor((day + (firstDow === 0 ? 6 : firstDow - 1) - 1) / 7);
+
+      // LIBRE: one day Mon-Fri per week
+      const libreWeekday = assignLibreDay(dayEmployees.length + idx, weekNum);
+      if (dow === libreWeekday) {
+        schedule[emp.id][day] = 'LIBRE';
+        continue;
+      }
+
+      // Sundays off for night workers
+      if (dow === 0) {
+        schedule[emp.id][day] = 'LIBRE';
+        continue;
+      }
+
+      schedule[emp.id][day] = NIGHT_CODES[idx % NIGHT_CODES.length];
     }
   });
 

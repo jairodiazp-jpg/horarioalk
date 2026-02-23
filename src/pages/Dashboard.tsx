@@ -9,7 +9,7 @@ import { useSchedulePersistence } from '@/hooks/useSchedulePersistence';
 import { Button } from '@/components/ui/button';
 import {
   LogOut, Download, Printer, Calendar,
-  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2
+  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2
 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
@@ -207,6 +207,15 @@ export default function Dashboard() {
                 className="gap-2 text-xs font-semibold">
                 <UserCog className="w-4 h-4" />
                 Gestionar Empleados
+              </Button>
+              <Button
+                onClick={regenerate}
+                size="sm"
+                variant="outline"
+                className="gap-2 text-xs font-semibold"
+                style={{ borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
+                <Wand2 className="w-4 h-4" />
+                Auto-Generar Horario
               </Button>
               <Button
                 onClick={handleExportExcel}
