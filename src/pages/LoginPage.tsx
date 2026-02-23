@@ -58,7 +58,7 @@ export default function LoginPage() {
 
       {/* Right panel - login form */}
       <div className="flex-1 flex items-center justify-center p-8" style={{ background: 'hsl(var(--background))' }}>
-        <div className="w-full max-w-md border border-muted-foreground rounded-xl shadow-2xl border-none">
+        <div className="w-full max-w-md border-none border-0 border-primary-foreground rounded-none shadow-none">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
              <img alt="Logo" className="h-10 object-contain" src="https://www.alkosto.com/medias/alkosto-logo-header.svg?context=bWFzdGVyfEljb25vcy1NZWdhbWVudS1BS3w4NTcxfGltYWdlL3N2Zyt4bWx8YURnMkwyZ3hZeTh4TkRreU1UWTFPRFE1T1RFd01pOWhiR3R2YzNSdkxXeHZaMjh0YUdWaFpHVnlMbk4yWnd8NzM0YjM2ZDc0Y2FhMzdkMGVjZGRmMDE0NmJjNzI5NTI3OWE2ODM0MzU1MzZiZWJkZjAzNzY3ZDg1Mjk3MTZiNw" />
