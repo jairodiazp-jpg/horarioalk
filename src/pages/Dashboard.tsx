@@ -10,12 +10,12 @@ import { useSchedulePersistence } from '@/hooks/useSchedulePersistence';
 import { Button } from '@/components/ui/button';
 import {
   LogOut, Download, Printer, Calendar,
-  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2, BarChart3
-} from 'lucide-react';
+  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2, BarChart3 } from
+'lucide-react';
 import logo from '@/assets/logo.png';
 
 const MONTHS_ES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 export default function Dashboard() {
   const { currentStore, logout } = useAuth();
@@ -29,7 +29,7 @@ export default function Dashboard() {
 
   const {
     employeesByDept, schedules, loading, initialized,
-    changeShift, addEmployee, removeEmployee, regenerate, clearScheduleData,
+    changeShift, addEmployee, removeEmployee, regenerate, clearScheduleData
   } = useSchedulePersistence(currentStore?.id, year, month);
 
   const handleScheduleChange = (employeeId: string, day: number, value: string) => {
@@ -54,25 +54,25 @@ export default function Dashboard() {
           <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'hsl(var(--primary))' }} />
           <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Cargando horarios...</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   const employees = employeesByDept[activeDept] || [];
   const schedule = schedules[activeDept] || {};
 
-  const deptStats = DEPARTMENTS.map(dept => ({
+  const deptStats = DEPARTMENTS.map((dept) => ({
     dept,
     count: (employeesByDept[dept] || []).length,
     shifts: Object.values(schedules[dept] || {}).reduce((acc, empDays) => {
-      Object.values(empDays).forEach(shift => {
+      Object.values(empDays).forEach((shift) => {
         acc[shift] = (acc[shift] || 0) + 1;
       });
       return acc;
-    }, {} as Record<string, number>),
+    }, {} as Record<string, number>)
   }));
 
-  const currentStats = deptStats.find(d => d.dept === activeDept);
+  const currentStats = deptStats.find((d) => d.dept === activeDept);
   const libreCount = currentStats?.shifts['LIBRE'] || 0;
   const compCount = currentStats?.shifts['COMP'] || 0;
 
@@ -80,9 +80,9 @@ export default function Dashboard() {
     <div className="min-h-screen flex flex-col" style={{ background: 'hsl(var(--background))' }}>
       {/* Top Navbar */}
       <header className="flex items-center justify-between px-6 py-3 shadow-md no-print"
-        style={{ background: 'hsl(214 65% 14%)', borderBottom: '1px solid hsl(214 50% 22%)' }}>
+      style={{ background: 'hsl(214 65% 14%)', borderBottom: '1px solid hsl(214 50% 22%)' }}>
          <div className="flex items-center gap-3">
-           <img src={logo} alt="Logo" className="h-8 object-contain" />
+           <img alt="Logo" className="h-8 object-contain rounded-lg border-0" src="https://www.alkosto.com/medias/alkosto-logo-header.svg?context=bWFzdGVyfEljb25vcy1NZWdhbWVudS1BS3w4NTcxfGltYWdlL3N2Zyt4bWx8YURnMkwyZ3hZeTh4TkRreU1UWTFPRFE1T1RFd01pOWhiR3R2YzNSdkxXeHZaMjh0YUdWaFpHVnlMbk4yWnd8NzM0YjM2ZDc0Y2FhMzdkMGVjZGRmMDE0NmJjNzI5NTI3OWE2ODM0MzU1MzZiZWJkZjAzNzY3ZDg1Mjk3MTZiNw" />
            <div>
              <div className="text-white/50 text-[10px] uppercase tracking-wider">{currentStore.name}</div>
            </div>
@@ -90,9 +90,9 @@ export default function Dashboard() {
 
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
-            style={{ background: 'hsl(214 50% 22%)' }}>
+          style={{ background: 'hsl(214 50% 22%)' }}>
             <button
-              onClick={() => { if (month === 1) { setMonth(12); setYear(y => y - 1); } else setMonth(m => m - 1); }}
+              onClick={() => {if (month === 1) {setMonth(12);setYear((y) => y - 1);} else setMonth((m) => m - 1);}}
               className="text-white/70 hover:text-white p-0.5">
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -101,26 +101,26 @@ export default function Dashboard() {
               {MONTHS_ES[month]} {year}
             </span>
             <button
-              onClick={() => { if (month === 12) { setMonth(1); setYear(y => y + 1); } else setMonth(m => m + 1); }}
+              onClick={() => {if (month === 12) {setMonth(1);setYear((y) => y + 1);} else setMonth((m) => m + 1);}}
               className="text-white/70 hover:text-white p-0.5">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
           <Button onClick={regenerate} variant="ghost" size="sm"
-            className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
+          className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <RefreshCw className="w-3.5 h-3.5" />
             Regenerar
           </Button>
 
           <Button onClick={handleExportExcel} variant="ghost" size="sm"
-            className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
+          className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <Download className="w-3.5 h-3.5" />
             Excel
           </Button>
 
           <Button onClick={handlePrint} variant="ghost" size="sm"
-            className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
+          className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <Printer className="w-3.5 h-3.5" />
             Cartelera
           </Button>
@@ -128,7 +128,7 @@ export default function Dashboard() {
           <div className="w-px h-5 mx-1 opacity-30" style={{ background: 'white' }} />
 
           <Button onClick={logout} variant="ghost" size="sm"
-            className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
+          className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
             <LogOut className="w-3.5 h-3.5" />
             Salir
           </Button>
@@ -138,10 +138,10 @@ export default function Dashboard() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside className="w-60 flex-shrink-0 flex flex-col py-4 px-3 no-print"
-          style={{ background: 'hsl(214 60% 11%)', borderRight: '1px solid hsl(214 50% 18%)' }}>
+        style={{ background: 'hsl(214 60% 11%)', borderRight: '1px solid hsl(214 50% 18%)' }}>
           <div className="mb-4 px-2">
             <div className="text-[10px] font-bold uppercase tracking-widest mb-3"
-              style={{ color: 'hsl(214 30% 55%)' }}>
+            style={{ color: 'hsl(214 30% 55%)' }}>
               Departamentos
             </div>
           </div>
@@ -156,37 +156,37 @@ export default function Dashboard() {
                 style={{
                   background: isActive ? 'hsl(214 50% 22%)' : 'transparent',
                   borderLeft: isActive ? '3px solid hsl(var(--sidebar-primary))' : '3px solid transparent',
-                  color: isActive ? 'white' : 'hsl(214 20% 60%)',
+                  color: isActive ? 'white' : 'hsl(214 20% 60%)'
                 }}>
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ background: isActive ? 'hsl(214 55% 32%)' : 'hsl(214 40% 18%)' }}>
+                style={{ background: isActive ? 'hsl(214 55% 32%)' : 'hsl(214 40% 18%)' }}>
                   <Users className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold">{dept}</div>
                   <div className="text-[10px] opacity-60">{count} empleados</div>
                 </div>
-              </button>
-            );
+              </button>);
+
           })}
 
           {/* Stats */}
           <div className="mt-6 px-2">
             <div className="text-[10px] font-bold uppercase tracking-widest mb-3"
-              style={{ color: 'hsl(214 30% 55%)' }}>
+            style={{ color: 'hsl(214 30% 55%)' }}>
               Resumen · {MONTHS_ES[month]}
             </div>
             {[
-              { label: 'LIBRE asignados', val: libreCount, color: 'hsl(var(--shift-libre))' },
-              { label: 'COMP asignados', val: compCount, color: 'hsl(var(--shift-comp))' },
-              { label: 'Total empleados', val: employees.length, color: 'hsl(var(--sidebar-primary))' },
-            ].map(stat => (
-              <div key={stat.label} className="flex justify-between items-center py-2 border-b"
-                style={{ borderColor: 'hsl(214 40% 18%)' }}>
+            { label: 'LIBRE asignados', val: libreCount, color: 'hsl(var(--shift-libre))' },
+            { label: 'COMP asignados', val: compCount, color: 'hsl(var(--shift-comp))' },
+            { label: 'Total empleados', val: employees.length, color: 'hsl(var(--sidebar-primary))' }].
+            map((stat) =>
+            <div key={stat.label} className="flex justify-between items-center py-2 border-b"
+            style={{ borderColor: 'hsl(214 40% 18%)' }}>
                 <span className="text-[11px]" style={{ color: 'hsl(214 20% 60%)' }}>{stat.label}</span>
                 <span className="font-bold text-sm" style={{ color: stat.color }}>{stat.val}</span>
               </div>
-            ))}
+            )}
           </div>
         </aside>
 
@@ -247,48 +247,48 @@ export default function Dashboard() {
           </div>
 
           <div className="flex-1 overflow-auto">
-            {showSummary ? (
-              <ScheduleSummary
-                employees={employees}
-                schedule={schedule}
-                year={year}
-                month={month}
-              />
-            ) : (
-              <ScheduleTable
-                employees={employees}
-                schedule={schedule}
-                onScheduleChange={handleScheduleChange}
-                year={year}
-                month={month}
-                tableRef={tableRef}
-              />
-            )}
+            {showSummary ?
+            <ScheduleSummary
+              employees={employees}
+              schedule={schedule}
+              year={year}
+              month={month} /> :
+
+
+            <ScheduleTable
+              employees={employees}
+              schedule={schedule}
+              onScheduleChange={handleScheduleChange}
+              year={year}
+              month={month}
+              tableRef={tableRef} />
+
+            }
           </div>
         </main>
       </div>
 
-      {showManager && (
-        <EmployeeManager
-          employees={employees}
-          activeDept={activeDept}
-          storeId={currentStore.id}
-          onAdd={addEmployee}
-          onRemove={(empId) => removeEmployee(activeDept, empId)}
-          onClose={() => setShowManager(false)}
-        />
-      )}
+      {showManager &&
+      <EmployeeManager
+        employees={employees}
+        activeDept={activeDept}
+        storeId={currentStore.id}
+        onAdd={addEmployee}
+        onRemove={(empId) => removeEmployee(activeDept, empId)}
+        onClose={() => setShowManager(false)} />
+
+      }
 
       <AIChatPanel
         employees={employees}
         year={year}
         month={month}
         onApplyActions={(actions) => {
-          actions.forEach(a => {
+          actions.forEach((a) => {
             handleScheduleChange(a.employeeId, a.day, a.newShift);
           });
-        }}
-      />
-    </div>
-  );
+        }} />
+
+    </div>);
+
 }
