@@ -34,23 +34,23 @@ export default function LoginPage() {
          </div>
         <div>
           <h1 className="text-4xl font-bold text-white leading-tight mb-4">
-            Gestión de Horarios<br/>para Grandes Cadenas
+            Gestión de Horarios<br />para Grandes Cadenas
           </h1>
           <p className="text-white/60 text-lg">
             Administre turnos, descansos y exportaciones de toda su cadena de tiendas desde un solo lugar.
           </p>
           <div className="mt-10 grid grid-cols-2 gap-4">
             {[
-              { label: 'Departamentos', val: '4' },
-              { label: 'Empleados/Depto.', val: '40' },
-              { label: 'Tipos de turno', val: '40+' },
-              { label: 'Exportación', val: 'Excel+PDF' },
-            ].map(stat => (
-              <div key={stat.label} className="bg-white/5 rounded-xl p-4 border border-white/10">
+            { label: 'Departamentos', val: '4' },
+            { label: 'Empleados/Depto.', val: '40' },
+            { label: 'Tipos de turno', val: '40+' },
+            { label: 'Exportación', val: 'Excel+PDF' }].
+            map((stat) =>
+            <div key={stat.label} className="bg-white/5 rounded-xl p-4 border border-white/10">
                 <div className="text-2xl font-bold text-white">{stat.val}</div>
                 <div className="text-white/50 text-sm mt-1">{stat.label}</div>
               </div>
-            ))}
+            )}
           </div>
         </div>
         <div className="text-white/30 text-sm">© 2025 SchedPro · Versión 1.0</div>
@@ -58,10 +58,10 @@ export default function LoginPage() {
 
       {/* Right panel - login form */}
       <div className="flex-1 flex items-center justify-center p-8" style={{ background: 'hsl(var(--background))' }}>
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md border border-muted-foreground rounded-xl shadow-2xl border-none">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
-             <img src={logo} alt="Logo" className="h-10 object-contain" />
+             <img alt="Logo" className="h-10 object-contain" src="https://www.alkosto.com/medias/alkosto-logo-header.svg?context=bWFzdGVyfEljb25vcy1NZWdhbWVudS1BS3w4NTcxfGltYWdlL3N2Zyt4bWx8YURnMkwyZ3hZeTh4TkRreU1UWTFPRFE1T1RFd01pOWhiR3R2YzNSdkxXeHZaMjh0YUdWaFpHVnlMbk4yWnd8NzM0YjM2ZDc0Y2FhMzdkMGVjZGRmMDE0NmJjNzI5NTI3OWE2ODM0MzU1MzZiZWJkZjAzNzY3ZDg1Mjk3MTZiNw" />
            </div>
 
           <h2 className="text-3xl font-bold mb-2" style={{ color: 'hsl(var(--foreground))' }}>
@@ -81,20 +81,20 @@ export default function LoginPage() {
                 <select
                   id="store"
                   value={storeName}
-                  onChange={e => setStoreName(e.target.value)}
+                  onChange={(e) => setStoreName(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-lg border text-sm appearance-none cursor-pointer"
                   style={{
                     background: 'hsl(var(--card))',
                     borderColor: 'hsl(var(--border))',
                     color: 'hsl(var(--foreground))',
-                    outline: 'none',
+                    outline: 'none'
                   }}
-                  required
-                >
+                  required>
+
                   <option value="">Seleccione una tienda...</option>
-                  {STORES.map(s => (
-                    <option key={s.id} value={s.name}>{s.name}</option>
-                  ))}
+                  {STORES.map((s) =>
+                  <option key={s.id} value={s.name}>{s.name}</option>
+                  )}
                 </select>
               </div>
             </div>
@@ -110,28 +110,28 @@ export default function LoginPage() {
                   type="password"
                   placeholder="Contraseña de acceso"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 py-3"
-                  required
-                />
+                  required />
+
               </div>
               <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Contraseña inicial: nombre de la tienda
               </p>
             </div>
 
-            {error && (
-              <div className="p-3 rounded-lg text-sm" style={{ background: 'hsl(var(--shift-libre-bg))', color: 'hsl(var(--shift-libre-fg))' }}>
+            {error &&
+            <div className="p-3 rounded-lg text-sm" style={{ background: 'hsl(var(--shift-libre-bg))', color: 'hsl(var(--shift-libre-fg))' }}>
                 {error}
               </div>
-            )}
+            }
 
             <Button
               type="submit"
               disabled={loading}
               className="w-full py-3 text-sm font-semibold"
-              style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
-            >
+              style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}>
+
               {loading ? 'Verificando...' : 'Ingresar al Panel'}
             </Button>
           </form>
@@ -140,20 +140,20 @@ export default function LoginPage() {
             <p className="text-xs font-semibold mb-2" style={{ color: 'hsl(var(--muted-foreground))' }}>
               TIENDAS DISPONIBLES (DEMO)
             </p>
-            {STORES.map(s => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => { setStoreName(s.name); setPassword(s.password); }}
-                className="block w-full text-left text-xs py-1 px-2 rounded hover:bg-white/50 transition-colors"
-                style={{ color: 'hsl(var(--foreground))' }}
-              >
+            {STORES.map((s) =>
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => {setStoreName(s.name);setPassword(s.password);}}
+              className="block w-full text-left text-xs py-1 px-2 rounded hover:bg-white/50 transition-colors"
+              style={{ color: 'hsl(var(--foreground))' }}>
+
                 → {s.name}
               </button>
-            ))}
+            )}
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
