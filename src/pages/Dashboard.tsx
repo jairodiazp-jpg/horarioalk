@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import ScheduleSummary from '@/components/ScheduleSummary';
 import { useAuth } from '@/contexts/AuthContext';
 import { DEPARTMENTS, Department } from '@/data/stores';
 import ScheduleTable from '@/components/ScheduleTable';
@@ -9,7 +10,7 @@ import { useSchedulePersistence } from '@/hooks/useSchedulePersistence';
 import { Button } from '@/components/ui/button';
 import {
   LogOut, Download, Printer, Calendar,
-  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2
+  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2, BarChart3
 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [showManager, setShowManager] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -218,6 +220,14 @@ export default function Dashboard() {
                 Auto-Generar Horario
               </Button>
               <Button
+                onClick={() => setShowSummary(!showSummary)}
+                size="sm"
+                variant={showSummary ? "default" : "outline"}
+                className="gap-2 text-xs font-semibold">
+                <BarChart3 className="w-4 h-4" />
+                {showSummary ? 'Ver Horario' : 'Ver Resumen'}
+              </Button>
+              <Button
                 onClick={handleExportExcel}
                 size="sm"
                 className="gap-2 text-xs font-semibold"
@@ -236,15 +246,24 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden">
-            <ScheduleTable
-              employees={employees}
-              schedule={schedule}
-              onScheduleChange={handleScheduleChange}
-              year={year}
-              month={month}
-              tableRef={tableRef}
-            />
+          <div className="flex-1 overflow-auto">
+            {showSummary ? (
+              <ScheduleSummary
+                employees={employees}
+                schedule={schedule}
+                year={year}
+                month={month}
+              />
+            ) : (
+              <ScheduleTable
+                employees={employees}
+                schedule={schedule}
+                onScheduleChange={handleScheduleChange}
+                year={year}
+                month={month}
+                tableRef={tableRef}
+              />
+            )}
           </div>
         </main>
       </div>
