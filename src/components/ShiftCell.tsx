@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getShiftClass, ALL_SHIFT_CODES, MORNING_SHIFTS, AFTERNOON_SHIFTS, NIGHT_SHIFTS, INTERMEDIATE_SHIFTS } from '@/data/shifts';
+import { getShiftClass, ALL_SHIFT_CODES, MORNING_SHIFTS, AFTERNOON_SHIFTS, NIGHT_SHIFTS, INTERMEDIATE_SHIFTS, SHIFT_MAP } from '@/data/shifts';
 import { X, Check } from 'lucide-react';
 
 interface ShiftCellProps {
@@ -11,7 +11,7 @@ interface ShiftCellProps {
 
 const QUICK_CODES = [
   { group: 'Mañana', codes: MORNING_SHIFTS },
-  { group: 'Intermedio', codes: INTERMEDIATE_SHIFTS.slice(0, 8) },
+  { group: 'Intermedio', codes: INTERMEDIATE_SHIFTS },
   { group: 'Tarde', codes: AFTERNOON_SHIFTS },
   { group: 'Noche', codes: NIGHT_SHIFTS },
   { group: 'Especial', codes: ['LIBRE', 'COMP', 'LIC', 'VC', 'DF'] },
@@ -120,16 +120,21 @@ export default function ShiftCell({ value, onChange, employeeId, day }: ShiftCel
                     style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>
                     {group}
                   </div>
-                  <div className="flex flex-wrap gap-1 p-2">
-                    {filtered.map(code => (
-                      <button
-                        key={code}
-                        onMouseDown={e => { e.preventDefault(); handleSelect(code); }}
-                        className={`text-xs font-bold px-2 py-1 rounded cursor-pointer transition-opacity hover:opacity-80 ${getShiftClass(code)}`}
-                      >
-                        {code}
-                      </button>
-                    ))}
+                  <div className="flex flex-col gap-0.5 p-1.5">
+                    {filtered.map(code => {
+                      const shift = SHIFT_MAP.get(code);
+                      const timeLabel = shift?.start && shift?.end ? `${shift.start}–${shift.end}` : shift?.label || '';
+                      return (
+                        <button
+                          key={code}
+                          onMouseDown={e => { e.preventDefault(); handleSelect(code); }}
+                          className={`flex items-center justify-between text-xs font-bold px-2 py-1.5 rounded cursor-pointer transition-opacity hover:opacity-80 ${getShiftClass(code)}`}
+                        >
+                          <span>{code}</span>
+                          <span className="ml-2 font-normal opacity-80 text-[10px]">{timeLabel}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               );
