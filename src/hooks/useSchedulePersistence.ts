@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Department, DEPARTMENTS, Employee, buildStoreData, generateDefaultSchedule } from '@/data/stores';
 
-// Fetch all rows paginating past the 1000-row default limit
+// Fetch all employees with pagination
 async function fetchAllEmployees(filters: Record<string, string | number>) {
   const PAGE = 1000;
   let allData: any[] = [];
@@ -10,7 +10,8 @@ async function fetchAllEmployees(filters: Record<string, string | number>) {
   while (true) {
     let q: any = supabase.from('employees').select('*').range(from, from + PAGE - 1);
     for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
-    const { data } = await q;
+    const { data, error } = await q;
+    if (error) { console.error('Fetch employees error:', error); break; }
     if (!data || data.length === 0) break;
     allData = allData.concat(data);
     if (data.length < PAGE) break;
@@ -19,6 +20,7 @@ async function fetchAllEmployees(filters: Record<string, string | number>) {
   return allData;
 }
 
+// Fetch all schedule entries with pagination
 async function fetchAllScheduleEntries(filters: Record<string, string | number>) {
   const PAGE = 1000;
   let allData: any[] = [];
@@ -26,13 +28,49 @@ async function fetchAllScheduleEntries(filters: Record<string, string | number>)
   while (true) {
     let q: any = supabase.from('schedule_entries').select('*').range(from, from + PAGE - 1);
     for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
-    const { data } = await q;
+    const { data, error } = await q;
+    if (error) { console.error('Fetch schedule_entries error:', error); break; }
     if (!data || data.length === 0) break;
     allData = allData.concat(data);
     if (data.length < PAGE) break;
     from += PAGE;
   }
   return allData;
+}
+
+// Delete all schedule entries matching filters (loops to bypass 1000-row limit)
+async function deleteAllScheduleEntries(filters: Record<string, string | number>) {
+  let retries = 0;
+  while (retries < 20) {
+    let q: any = supabase.from('schedule_entries').delete();
+    for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
+    const { error } = await q;
+    if (error) { console.error('Delete schedule_entries error:', error); break; }
+    // Check if rows remain
+    let checkQ: any = supabase.from('schedule_entries').select('id', { count: 'exact', head: true });
+    for (const [k, v] of Object.entries(filters)) checkQ = checkQ.eq(k, v);
+    const { count } = await checkQ;
+    if (!count || count === 0) break;
+    retries++;
+  }
+}
+
+// Batch upsert schedule entries
+async function batchUpsertSchedule(rows: any[], batchSize = 500) {
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize);
+    const { error } = await (supabase.from('schedule_entries') as any).upsert(batch, { onConflict: 'store_id,employee_id,day,month,year' });
+    if (error) console.error(`Upsert schedule batch ${i} error:`, error);
+  }
+}
+
+// Batch insert employees
+async function batchInsertEmployees(rows: any[], batchSize = 500) {
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize);
+    const { error } = await supabase.from('employees').insert(batch as any);
+    if (error) console.error(`Insert employees batch ${i} error:`, error);
+  }
 }
 
 export function useSchedulePersistence(storeId: string | undefined, year: number, month: number) {
@@ -57,7 +95,6 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
       let empByDept: Record<Department, Employee[]>;
 
       if (dbEmployees && dbEmployees.length > 0) {
-        // Load from DB
         empByDept = { Mercado: [], Hogar: [], Electro: [], Caja: [] };
         dbEmployees.forEach((row: any) => {
           const dept = row.departamento as Department;
@@ -76,7 +113,6 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
         const storeData = buildStoreData(storeId);
         empByDept = { ...storeData };
 
-        // Batch insert employees
         const rows = DEPARTMENTS.flatMap(dept =>
           storeData[dept].map(emp => ({
             id: emp.id,
@@ -87,7 +123,7 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
             actividad: emp.actividad,
           }))
         );
-        await supabase.from('employees').insert(rows);
+        await batchInsertEmployees(rows, 500);
       }
 
       setEmployeesByDept(empByDept);
@@ -103,6 +139,7 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
         sched = { Mercado: {}, Hogar: {}, Electro: {}, Caja: {} };
         dbSchedule.forEach((row: any) => {
           const dept = row.departamento as Department;
+          if (!sched[dept]) sched[dept] = {};
           if (!sched[dept][row.employee_id]) sched[dept][row.employee_id] = {};
           sched[dept][row.employee_id][row.day] = row.shift_code;
         });
@@ -126,10 +163,7 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
             });
           });
         });
-        // Insert in batches of 500
-        for (let i = 0; i < allEntries.length; i += 500) {
-          await supabase.from('schedule_entries').insert(allEntries.slice(i, i + 500));
-        }
+        await batchUpsertSchedule(allEntries, 500);
       }
 
       setSchedules(sched as any);
@@ -154,7 +188,6 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
         },
       },
     }));
-    // Upsert to DB
     supabase.from('schedule_entries').upsert({
       store_id: storeId,
       departamento: dept,
@@ -163,7 +196,9 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
       month,
       year,
       shift_code: value,
-    }, { onConflict: 'store_id,employee_id,day,month,year' }).then();
+    }, { onConflict: 'store_id,employee_id,day,month,year' }).then(({ error }) => {
+      if (error) console.error('Upsert shift error:', error);
+    });
   }, [storeId, month, year]);
 
   // Add employee
@@ -174,15 +209,16 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
       ...prev,
       [dept]: [...(prev[dept] || []), emp],
     }));
-    // Save to DB
-    supabase.from('employees').insert({
+    supabase.from('employees').upsert({
       id: emp.id,
       store_id: storeId,
       departamento: emp.departamento,
       codigo: emp.codigo,
       nombre: emp.nombre,
       actividad: emp.actividad,
-    }).then();
+    }).then(({ error }) => {
+      if (error) console.error('Insert employee error:', error);
+    });
     // Initialize schedule
     const daysInMonth = new Date(year, month, 0).getDate();
     const empSchedule: Record<number, string> = {};
@@ -203,7 +239,7 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
       ...prev,
       [dept]: { ...(prev[dept] || {}), [emp.id]: empSchedule },
     }));
-    supabase.from('schedule_entries').insert(entries).then();
+    batchUpsertSchedule(entries, 500);
   }, [storeId, year, month]);
 
   // Remove employee
@@ -218,7 +254,6 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
       delete deptSched[empId];
       return { ...prev, [dept]: deptSched };
     });
-    // Remove from DB
     supabase.from('employees').delete().eq('id', empId).eq('store_id', storeId).then();
     supabase.from('schedule_entries').delete().eq('employee_id', empId).eq('store_id', storeId).then();
   }, [storeId]);
@@ -226,9 +261,8 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
   // Regenerate schedules
   const regenerate = useCallback(async () => {
     if (!storeId) return;
-    // Delete existing schedule entries for this month
-    await supabase.from('schedule_entries').delete()
-      .eq('store_id', storeId).eq('year', year).eq('month', month);
+    // Delete ALL existing schedule entries for this month (handles >1000 rows)
+    await deleteAllScheduleEntries({ store_id: storeId, year, month });
 
     const next: Record<string, any> = {};
     const allEntries: any[] = [];
@@ -248,18 +282,14 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
         });
       });
     });
-    for (let i = 0; i < allEntries.length; i += 500) {
-      await supabase.from('schedule_entries').insert(allEntries.slice(i, i + 500));
-    }
+    await batchUpsertSchedule(allEntries, 500);
     setSchedules(next as any);
   }, [employeesByDept, year, month, storeId]);
 
-  // Clear all schedule data for this store/month (after export/print)
+  // Clear all schedule data for this store/month
   const clearScheduleData = useCallback(async () => {
     if (!storeId) return;
-    await supabase.from('schedule_entries').delete()
-      .eq('store_id', storeId).eq('year', year).eq('month', month);
-    // Reset local state to empty
+    await deleteAllScheduleEntries({ store_id: storeId, year, month });
     const empty: Record<string, any> = {};
     DEPARTMENTS.forEach(dept => { empty[dept] = {}; });
     setSchedules(empty as any);
