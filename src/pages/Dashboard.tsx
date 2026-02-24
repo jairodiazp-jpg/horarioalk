@@ -36,14 +36,12 @@ export default function Dashboard() {
     changeShift(activeDept, employeeId, day, value);
   };
 
-  const handleExportExcel = async () => {
+  const handleExportExcel = () => {
     exportToExcel(currentStore!.name, activeDept, employees, schedule, year, month);
-    await clearScheduleData();
   };
 
-  const handlePrint = async () => {
+  const handlePrint = () => {
     printSchedule(currentStore!.name, activeDept, month, year);
-    await clearScheduleData();
   };
 
   if (!currentStore) return null;
