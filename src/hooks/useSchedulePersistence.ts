@@ -2,6 +2,39 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Department, DEPARTMENTS, Employee, buildStoreData, generateDefaultSchedule } from '@/data/stores';
 
+// Fetch all rows paginating past the 1000-row default limit
+async function fetchAllEmployees(filters: Record<string, string | number>) {
+  const PAGE = 1000;
+  let allData: any[] = [];
+  let from = 0;
+  while (true) {
+    let q: any = supabase.from('employees').select('*').range(from, from + PAGE - 1);
+    for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
+    const { data } = await q;
+    if (!data || data.length === 0) break;
+    allData = allData.concat(data);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return allData;
+}
+
+async function fetchAllScheduleEntries(filters: Record<string, string | number>) {
+  const PAGE = 1000;
+  let allData: any[] = [];
+  let from = 0;
+  while (true) {
+    let q: any = supabase.from('schedule_entries').select('*').range(from, from + PAGE - 1);
+    for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
+    const { data } = await q;
+    if (!data || data.length === 0) break;
+    allData = allData.concat(data);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return allData;
+}
+
 export function useSchedulePersistence(storeId: string | undefined, year: number, month: number) {
   const [employeesByDept, setEmployeesByDept] = useState<Record<Department, Employee[]>>({} as any);
   const [schedules, setSchedules] = useState<Record<Department, Record<string, Record<number, string>>>>({} as any);
@@ -17,10 +50,7 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
       setLoading(true);
 
       // Check if employees exist in DB for this store
-      const { data: dbEmployees } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('store_id', storeId);
+      const dbEmployees = await fetchAllEmployees({ store_id: storeId });
 
       if (cancelled) return;
 
@@ -63,12 +93,7 @@ export function useSchedulePersistence(storeId: string | undefined, year: number
       setEmployeesByDept(empByDept);
 
       // Load schedules from DB
-      const { data: dbSchedule } = await supabase
-        .from('schedule_entries')
-        .select('*')
-        .eq('store_id', storeId)
-        .eq('year', year)
-        .eq('month', month);
+      const dbSchedule = await fetchAllScheduleEntries({ store_id: storeId, year, month });
 
       if (cancelled) return;
 
