@@ -68,7 +68,9 @@ export default function LoginPage() {
             Acceso a Panel
           </h2>
           <p className="mb-8" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Ingrese con las credenciales de su tienda
+            Ingrese con las credenciales de su tienda 
+Creado y distribuido por leonidas diaz      
+ 
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -78,18 +80,16 @@ export default function LoginPage() {
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'hsl(var(--muted-foreground))' }} />
-                <select
-                  id="store"
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border text-sm appearance-none cursor-pointer"
-                  style={{
-                    background: 'hsl(var(--card))',
-                    borderColor: 'hsl(var(--border))',
-                    color: 'hsl(var(--foreground))',
-                    outline: 'none'
-                  }}
-                  required>
+                <select id="store" value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-lg border text-sm appearance-none cursor-pointer"
+                style={{
+                  background: 'hsl(var(--card))',
+                  borderColor: 'hsl(var(--border))',
+                  color: 'hsl(var(--foreground))',
+                  outline: 'none'
+                }}
+                required>
 
                   <option value="">Seleccione una tienda...</option>
                   {STORES.map((s) =>
