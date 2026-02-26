@@ -1,0 +1,14 @@
+# Cloudflare Pages Configuration
+
+# Language support
+[[build]]
+  command = "bun build"
+  functions = "functions/"
+  publish = "public/"
+  environment = { NODE_ENV = "production" }
+
+# Static asset configuration
+[[dataloader]]
+  path = "./src/static"
+  output = "./public/static"
+  ignore = [".DS_Store"]
