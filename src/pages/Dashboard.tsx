@@ -274,10 +274,16 @@ export default function Dashboard() {
         employees={employees}
         year={year}
         month={month}
+        storeId={currentStore.id}
+        department={activeDept}
         onApplyActions={(actions) => {
           actions.forEach((a) => {
             handleScheduleChange(a.employeeId, a.day, a.newShift);
           });
+        }}
+        onEmployeeChange={() => {
+          // Trigger a re-fetch by changing month back and forth (simple reload)
+          window.location.reload();
         }} />
 
       {pendingDept && (
