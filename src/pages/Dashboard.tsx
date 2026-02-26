@@ -7,10 +7,13 @@ import EmployeeManager from '@/components/EmployeeManager';
 import { exportToExcel, printSchedule } from '@/utils/exportUtils';
 import AIChatPanel from '@/components/AIChatPanel';
 import { useSchedulePersistence } from '@/hooks/useSchedulePersistence';
+import { useDepartmentAuth } from '@/hooks/useDepartmentAuth';
+import DepartmentLockDialog from '@/components/DepartmentLockDialog';
+import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 import { Button } from '@/components/ui/button';
 import {
   LogOut, Download, Printer, Calendar,
-  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2, BarChart3 } from
+  Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2, BarChart3, KeyRound, Lock } from
 'lucide-react';
 import logo from '@/assets/logo.png';
 
@@ -25,7 +28,12 @@ export default function Dashboard() {
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [showManager, setShowManager] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [pendingDept, setPendingDept] = useState<Department | null>(null);
+  const [lockError, setLockError] = useState('');
   const tableRef = useRef<HTMLDivElement>(null);
+
+  const { isDeptUnlocked, verifyPassword, changePassword, lockDept, loading: authLoading } = useDepartmentAuth(currentStore?.id);
 
   const {
     employeesByDept, schedules, loading, initialized,
@@ -149,7 +157,14 @@ export default function Dashboard() {
             return (
               <button
                 key={dept}
-                onClick={() => setActiveDept(dept)}
+                onClick={() => {
+                  if (isDeptUnlocked(dept)) {
+                    setActiveDept(dept);
+                  } else {
+                    setPendingDept(dept);
+                    setLockError('');
+                  }
+                }}
                 className="flex items-center gap-3 px-3 py-3 rounded-lg mb-1.5 transition-all text-left w-full"
                 style={{
                   background: isActive ? 'hsl(214 50% 22%)' : 'transparent',
@@ -158,7 +173,7 @@ export default function Dashboard() {
                 }}>
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center"
                 style={{ background: isActive ? 'hsl(214 55% 32%)' : 'hsl(214 40% 18%)' }}>
-                  <Users className="w-4 h-4" />
+                  {isDeptUnlocked(dept) ? <Users className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                 </div>
                 <div>
                   <div className="text-sm font-semibold">{dept}</div>
@@ -190,79 +205,57 @@ export default function Dashboard() {
 
         {/* Main content */}
         <main className="flex-1 flex flex-col overflow-hidden p-5">
-          <div className="flex items-center justify-between mb-4 no-print">
-            <div>
-              <h1 className="text-xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>
-                Departamento · {activeDept}
-              </h1>
-              <p className="text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                {employees.length} empleados · {MONTHS_ES[month]} {year} · Clic en celda para editar turno
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowManager(true)}
-                size="sm"
-                variant="outline"
-                className="gap-2 text-xs font-semibold">
-                <UserCog className="w-4 h-4" />
-                Gestionar Empleados
-              </Button>
-              <Button
-                onClick={regenerate}
-                size="sm"
-                variant="outline"
-                className="gap-2 text-xs font-semibold"
-                style={{ borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
-                <Wand2 className="w-4 h-4" />
-                Auto-Generar Horario
-              </Button>
-              <Button
-                onClick={() => setShowSummary(!showSummary)}
-                size="sm"
-                variant={showSummary ? "default" : "outline"}
-                className="gap-2 text-xs font-semibold">
-                <BarChart3 className="w-4 h-4" />
-                {showSummary ? 'Ver Horario' : 'Ver Resumen'}
-              </Button>
-              <Button
-                onClick={handleExportExcel}
-                size="sm"
-                className="gap-2 text-xs font-semibold"
-                style={{ background: 'hsl(141 71% 38%)', color: 'white' }}>
-                <Download className="w-4 h-4" />
-                Exportar Excel
-              </Button>
-              <Button
-                onClick={handlePrint}
-                size="sm"
-                variant="outline"
-                className="gap-2 text-xs font-semibold">
-                <Printer className="w-4 h-4" />
-                Optimizar para Cartelera
+          {!isDeptUnlocked(activeDept) ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+              <Lock className="w-12 h-12 text-muted-foreground" />
+              <h2 className="text-lg font-bold text-foreground">Departamento · {activeDept}</h2>
+              <p className="text-sm text-muted-foreground">Ingrese la contraseña para acceder</p>
+              <Button onClick={() => { setPendingDept(activeDept); setLockError(''); }} className="gap-2">
+                <Lock className="w-4 h-4" /> Desbloquear
               </Button>
             </div>
-          </div>
-
-          <div className="flex-1 overflow-auto">
-            {showSummary ?
-            <ScheduleSummary
-              employees={employees}
-              schedule={schedule}
-              year={year}
-              month={month} /> :
-
-
-            <ScheduleTable
-              employees={employees}
-              schedule={schedule}
-              onScheduleChange={handleScheduleChange}
-              year={year}
-              month={month}
-              tableRef={tableRef} />
-
-            }
-          </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-4 no-print">
+                <div>
+                  <h1 className="text-xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>
+                    Departamento · {activeDept}
+                  </h1>
+                  <p className="text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                    {employees.length} empleados · {MONTHS_ES[month]} {year} · Clic en celda para editar turno
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => setShowManager(true)} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
+                    <UserCog className="w-4 h-4" /> Gestionar Empleados
+                  </Button>
+                  <Button onClick={regenerate} size="sm" variant="outline" className="gap-2 text-xs font-semibold"
+                    style={{ borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
+                    <Wand2 className="w-4 h-4" /> Auto-Generar Horario
+                  </Button>
+                  <Button onClick={() => setShowSummary(!showSummary)} size="sm" variant={showSummary ? "default" : "outline"} className="gap-2 text-xs font-semibold">
+                    <BarChart3 className="w-4 h-4" /> {showSummary ? 'Ver Horario' : 'Ver Resumen'}
+                  </Button>
+                  <Button onClick={handleExportExcel} size="sm" className="gap-2 text-xs font-semibold"
+                    style={{ background: 'hsl(141 71% 38%)', color: 'white' }}>
+                    <Download className="w-4 h-4" /> Exportar Excel
+                  </Button>
+                  <Button onClick={handlePrint} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
+                    <Printer className="w-4 h-4" /> Optimizar para Cartelera
+                  </Button>
+                  <Button onClick={() => setShowChangePassword(true)} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
+                    <KeyRound className="w-4 h-4" /> Cambiar Contraseña
+                  </Button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-auto">
+                {showSummary ?
+                  <ScheduleSummary employees={employees} schedule={schedule} year={year} month={month} /> :
+                  <ScheduleTable employees={employees} schedule={schedule} onScheduleChange={handleScheduleChange} year={year} month={month} tableRef={tableRef} />
+                }
+              </div>
+            </>
+          )}
         </main>
       </div>
 
@@ -286,6 +279,33 @@ export default function Dashboard() {
             handleScheduleChange(a.employeeId, a.day, a.newShift);
           });
         }} />
+
+      {pendingDept && (
+        <DepartmentLockDialog
+          open={!!pendingDept}
+          dept={pendingDept}
+          loading={authLoading}
+          error={lockError}
+          onVerify={async (pw) => {
+            const ok = await verifyPassword(pendingDept, pw);
+            if (ok) {
+              setActiveDept(pendingDept);
+              setPendingDept(null);
+              setLockError('');
+            } else {
+              setLockError('Contraseña incorrecta');
+            }
+          }}
+          onCancel={() => { setPendingDept(null); setLockError(''); }}
+        />
+      )}
+
+      <ChangePasswordDialog
+        open={showChangePassword}
+        dept={activeDept}
+        onChangePassword={(cur, newP) => changePassword(activeDept, cur, newP)}
+        onClose={() => setShowChangePassword(false)}
+      />
 
     </div>);
 
