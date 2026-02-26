@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      department_passwords: {
+        Row: {
+          created_at: string
+          departamento: string
+          id: string
+          password: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          departamento: string
+          id?: string
+          password?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          departamento?: string
+          id?: string
+          password?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           actividad: string
