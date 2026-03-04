@@ -15,6 +15,7 @@ import {
   LogOut, Download, Printer, Calendar,
   Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2, BarChart3, KeyRound, Lock } from
 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import logo from '@/assets/logo.png';
 
 const MONTHS_ES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -95,49 +96,74 @@ export default function Dashboard() {
          </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
-          style={{ background: 'hsl(214 50% 22%)' }}>
-            <button
-              onClick={() => {if (month === 1) {setMonth(12);setYear((y) => y - 1);} else setMonth((m) => m - 1);}}
-              className="text-white/70 hover:text-white p-0.5">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <Calendar className="w-4 h-4 text-white/70 mx-1" />
-            <span className="text-white text-sm font-medium px-1">
-              {MONTHS_ES[month]} {year}
-            </span>
-            <button
-              onClick={() => {if (month === 12) {setMonth(1);setYear((y) => y + 1);} else setMonth((m) => m + 1);}}
-              className="text-white/70 hover:text-white p-0.5">
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
+              style={{ background: 'hsl(214 50% 22%)' }}>
+                <button
+                  onClick={() => {if (month === 1) {setMonth(12);setYear((y) => y - 1);} else setMonth((m) => m - 1);}}
+                  className="text-white/70 hover:text-white p-0.5">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <Calendar className="w-4 h-4 text-white/70 mx-1" />
+                <span className="text-white text-sm font-medium px-1">
+                  {MONTHS_ES[month]} {year}
+                </span>
+                <button
+                  onClick={() => {if (month === 12) {setMonth(1);setYear((y) => y + 1);} else setMonth((m) => m + 1);}}
+                  className="text-white/70 hover:text-white p-0.5">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>Navega entre meses para ver o editar horarios</TooltipContent>
+          </Tooltip>
 
-          <Button onClick={regenerate} variant="ghost" size="sm"
-          className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
-            <RefreshCw className="w-3.5 h-3.5" />
-            Regenerar
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={regenerate} variant="ghost" size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
+                <RefreshCw className="w-3.5 h-3.5" />
+                Regenerar
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Regenera automáticamente los turnos del mes actual</TooltipContent>
+          </Tooltip>
 
-          <Button onClick={handleExportExcel} variant="ghost" size="sm"
-          className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
-            <Download className="w-3.5 h-3.5" />
-            Excel
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={handleExportExcel} variant="ghost" size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
+                <Download className="w-3.5 h-3.5" />
+                Excel
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Descarga el horario actual en formato Excel</TooltipContent>
+          </Tooltip>
 
-          <Button onClick={handlePrint} variant="ghost" size="sm"
-          className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
-            <Printer className="w-3.5 h-3.5" />
-            Cartelera
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={handlePrint} variant="ghost" size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
+                <Printer className="w-3.5 h-3.5" />
+                Cartelera
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Imprime el horario optimizado para cartelera</TooltipContent>
+          </Tooltip>
 
           <div className="w-px h-5 mx-1 opacity-30" style={{ background: 'white' }} />
 
-          <Button onClick={logout} variant="ghost" size="sm"
-          className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
-            <LogOut className="w-3.5 h-3.5" />
-            Salir
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={logout} variant="ghost" size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
+                <LogOut className="w-3.5 h-3.5" />
+                Salir
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Cerrar sesión y volver al login</TooltipContent>
+          </Tooltip>
         </div>
       </header>
 
@@ -155,32 +181,37 @@ export default function Dashboard() {
           {deptStats.map(({ dept, count }) => {
             const isActive = dept === activeDept;
             return (
-              <button
-                key={dept}
-                onClick={() => {
-                  if (isDeptUnlocked(dept)) {
-                    setActiveDept(dept);
-                  } else {
-                    setPendingDept(dept);
-                    setLockError('');
-                  }
-                }}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg mb-1.5 transition-all text-left w-full"
-                style={{
-                  background: isActive ? 'hsl(214 50% 22%)' : 'transparent',
-                  borderLeft: isActive ? '3px solid hsl(var(--sidebar-primary))' : '3px solid transparent',
-                  color: isActive ? 'white' : 'hsl(214 20% 60%)'
-                }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: isActive ? 'hsl(214 55% 32%)' : 'hsl(214 40% 18%)' }}>
-                  {isDeptUnlocked(dept) ? <Users className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">{dept}</div>
-                  <div className="text-[10px] opacity-60">{count} empleados</div>
-                </div>
-              </button>);
-
+              <Tooltip key={dept}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      if (isDeptUnlocked(dept)) {
+                        setActiveDept(dept);
+                      } else {
+                        setPendingDept(dept);
+                        setLockError('');
+                      }
+                    }}
+                    className="flex items-center gap-3 px-3 py-3 rounded-lg mb-1.5 transition-all text-left w-full"
+                    style={{
+                      background: isActive ? 'hsl(214 50% 22%)' : 'transparent',
+                      borderLeft: isActive ? '3px solid hsl(var(--sidebar-primary))' : '3px solid transparent',
+                      color: isActive ? 'white' : 'hsl(214 20% 60%)'
+                    }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ background: isActive ? 'hsl(214 55% 32%)' : 'hsl(214 40% 18%)' }}>
+                      {isDeptUnlocked(dept) ? <Users className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold">{dept}</div>
+                      <div className="text-[10px] opacity-60">{count} empleados</div>
+                    </div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  {isDeptUnlocked(dept) ? `Ver horarios de ${dept}` : `🔒 Requiere contraseña para acceder a ${dept}`}
+                </TooltipContent>
+              </Tooltip>);
           })}
 
           {/* Stats */}
@@ -226,26 +257,56 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={() => setShowManager(true)} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
-                    <UserCog className="w-4 h-4" /> Gestionar Empleados
-                  </Button>
-                  <Button onClick={regenerate} size="sm" variant="outline" className="gap-2 text-xs font-semibold"
-                    style={{ borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
-                    <Wand2 className="w-4 h-4" /> Auto-Generar Horario
-                  </Button>
-                  <Button onClick={() => setShowSummary(!showSummary)} size="sm" variant={showSummary ? "default" : "outline"} className="gap-2 text-xs font-semibold">
-                    <BarChart3 className="w-4 h-4" /> {showSummary ? 'Ver Horario' : 'Ver Resumen'}
-                  </Button>
-                  <Button onClick={handleExportExcel} size="sm" className="gap-2 text-xs font-semibold"
-                    style={{ background: 'hsl(141 71% 38%)', color: 'white' }}>
-                    <Download className="w-4 h-4" /> Exportar Excel
-                  </Button>
-                  <Button onClick={handlePrint} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
-                    <Printer className="w-4 h-4" /> Optimizar para Cartelera
-                  </Button>
-                  <Button onClick={() => setShowChangePassword(true)} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
-                    <KeyRound className="w-4 h-4" /> Cambiar Contraseña
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={() => setShowManager(true)} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
+                        <UserCog className="w-4 h-4" /> Gestionar Empleados
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Agregar, editar o eliminar empleados del departamento</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={regenerate} size="sm" variant="outline" className="gap-2 text-xs font-semibold"
+                        style={{ borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
+                        <Wand2 className="w-4 h-4" /> Auto-Generar Horario
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Genera automáticamente turnos rotativos para todos los empleados</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={() => setShowSummary(!showSummary)} size="sm" variant={showSummary ? "default" : "outline"} className="gap-2 text-xs font-semibold">
+                        <BarChart3 className="w-4 h-4" /> {showSummary ? 'Ver Horario' : 'Ver Resumen'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{showSummary ? 'Volver a la vista de horarios por día' : 'Ver estadísticas y resumen de turnos asignados'}</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={handleExportExcel} size="sm" className="gap-2 text-xs font-semibold"
+                        style={{ background: 'hsl(141 71% 38%)', color: 'white' }}>
+                        <Download className="w-4 h-4" /> Exportar Excel
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Descarga el horario completo en archivo Excel (.xlsx)</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={handlePrint} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
+                        <Printer className="w-4 h-4" /> Optimizar para Cartelera
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Formatea e imprime el horario para colocar en cartelera</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={() => setShowChangePassword(true)} size="sm" variant="outline" className="gap-2 text-xs font-semibold">
+                        <KeyRound className="w-4 h-4" /> Cambiar Contraseña
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Cambiar la contraseña de acceso de este departamento</TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
               <div className="flex-1 overflow-auto">
