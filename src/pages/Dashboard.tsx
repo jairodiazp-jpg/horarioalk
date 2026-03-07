@@ -133,7 +133,7 @@ export default function Dashboard() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button onClick={handleExportExcel} variant="ghost" size="sm"
+              <Button data-tour="export-excel" onClick={handleExportExcel} variant="ghost" size="sm"
               className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
                 <Download className="w-3.5 h-3.5" />
                 Excel
