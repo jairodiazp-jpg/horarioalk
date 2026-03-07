@@ -150,7 +150,7 @@ export default function AIChatPanel({ employees, year, month, storeId, departmen
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-96 rounded-xl shadow-2xl border flex flex-col no-print"
+    <div data-tour="ai-chat" className="fixed bottom-6 right-6 z-50 w-96 rounded-xl shadow-2xl border flex flex-col no-print"
       style={{
         background: 'hsl(var(--card))',
         borderColor: 'hsl(var(--border))',
