@@ -17,6 +17,7 @@ import {
 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import logo from '@/assets/logo.png';
+import WelcomeTour from '@/components/WelcomeTour';
 
 const MONTHS_ES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -98,7 +99,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
+              <div data-tour="month-nav" className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
               style={{ background: 'hsl(214 50% 22%)' }}>
                 <button
                   onClick={() => {if (month === 1) {setMonth(12);setYear((y) => y - 1);} else setMonth((m) => m - 1);}}
@@ -121,7 +122,7 @@ export default function Dashboard() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button onClick={regenerate} variant="ghost" size="sm"
+              <Button data-tour="regenerate" onClick={regenerate} variant="ghost" size="sm"
               className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
                 <RefreshCw className="w-3.5 h-3.5" />
                 Regenerar
@@ -132,7 +133,7 @@ export default function Dashboard() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button onClick={handleExportExcel} variant="ghost" size="sm"
+              <Button data-tour="export-excel" onClick={handleExportExcel} variant="ghost" size="sm"
               className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs">
                 <Download className="w-3.5 h-3.5" />
                 Excel
@@ -171,7 +172,7 @@ export default function Dashboard() {
         {/* Sidebar */}
         <aside className="w-60 flex-shrink-0 flex flex-col py-4 px-3 no-print"
         style={{ background: 'hsl(214 60% 11%)', borderRight: '1px solid hsl(214 50% 18%)' }}>
-          <div className="mb-4 px-2">
+           <div className="mb-4 px-2" data-tour="departments">
             <div className="text-[10px] font-bold uppercase tracking-widest mb-3"
             style={{ color: 'hsl(214 30% 55%)' }}>
               Departamentos
@@ -215,7 +216,7 @@ export default function Dashboard() {
           })}
 
           {/* Stats */}
-          <div className="mt-6 px-2">
+          <div className="mt-6 px-2" data-tour="sidebar-stats">
             <div className="text-[10px] font-bold uppercase tracking-widest mb-3"
             style={{ color: 'hsl(214 30% 55%)' }}>
               Resumen · {MONTHS_ES[month]}
@@ -309,7 +310,7 @@ export default function Dashboard() {
                   </Tooltip>
                 </div>
               </div>
-              <div className="flex-1 overflow-auto">
+              <div className="flex-1 overflow-auto" data-tour="schedule-area">
                 {showSummary ?
                   <ScheduleSummary employees={employees} schedule={schedule} year={year} month={month} /> :
                   <ScheduleTable employees={employees} schedule={schedule} onScheduleChange={handleScheduleChange} year={year} month={month} tableRef={tableRef} />
@@ -374,6 +375,7 @@ export default function Dashboard() {
         onClose={() => setShowChangePassword(false)}
       />
 
+      <WelcomeTour />
     </div>);
 
 }
