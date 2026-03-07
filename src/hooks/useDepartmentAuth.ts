@@ -3,12 +3,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { Department, DEPARTMENTS } from '@/data/stores';
 
 export function useDepartmentAuth(storeId: string | undefined) {
-  const [unlockedDepts, setUnlockedDepts] = useState<Set<Department>>(new Set());
+  const isDemo = storeId === 'demo';
+  const [unlockedDepts, setUnlockedDepts] = useState<Set<Department>>(
+    isDemo ? new Set(DEPARTMENTS) : new Set()
+  );
   const [loading, setLoading] = useState(false);
+
+  // Auto-unlock all departments for DEMO store
+  useEffect(() => {
+    if (isDemo) {
+      setUnlockedDepts(new Set(DEPARTMENTS));
+    }
+  }, [isDemo]);
 
   // Initialize default passwords for this store if they don't exist
   useEffect(() => {
-    if (!storeId) return;
+    if (!storeId || isDemo) return;
     const init = async () => {
       for (const dept of DEPARTMENTS) {
         await supabase
@@ -20,7 +30,7 @@ export function useDepartmentAuth(storeId: string | undefined) {
       }
     };
     init();
-  }, [storeId]);
+  }, [storeId, isDemo]);
 
   const verifyPassword = useCallback(async (dept: Department, password: string): Promise<boolean> => {
     if (!storeId) return false;
