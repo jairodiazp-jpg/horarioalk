@@ -375,6 +375,7 @@ export default function Dashboard() {
         onClose={() => setShowChangePassword(false)}
       />
 
+      <WelcomeTour />
     </div>);
 
 }
