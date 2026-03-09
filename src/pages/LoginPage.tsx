@@ -161,7 +161,7 @@ export default function LoginPage() {
           </div>
 
           {/* Login form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 animate-[fade-in_0.6s_ease-out_0.3s_both]">
             <div className="space-y-2">
               <Label htmlFor="store" className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                 Tienda
