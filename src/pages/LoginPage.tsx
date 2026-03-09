@@ -262,7 +262,7 @@ export default function LoginPage() {
           </form>
 
           {/* Quick access - Demo */}
-          <div className="mt-8">
+          <div className="mt-8 animate-[fade-in_0.5s_ease-out_0.5s_both]">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t" style={{ borderColor: 'hsl(var(--border))' }} />
