@@ -493,7 +493,8 @@ export default function Dashboard() {
 
               {/* Content Area */}
               <div 
-                className="flex-1 overflow-auto rounded-xl border bg-card"
+                key={`${activeDept}-${showSummary}`}
+                className="flex-1 overflow-auto rounded-xl border bg-card animate-[fade-in_0.3s_ease-out]"
                 style={{ boxShadow: 'var(--card-shadow)' }}
                 data-tour="schedule-area"
               >
