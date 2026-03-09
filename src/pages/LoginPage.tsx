@@ -61,7 +61,7 @@ export default function LoginPage() {
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between h-full p-12">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 animate-[fade-in_0.6s_ease-out]">
             <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
               <img src={logo} alt="Logo" className="h-8 object-contain" />
             </div>
@@ -70,7 +70,7 @@ export default function LoginPage() {
 
           {/* Hero content */}
           <div className="space-y-8">
-            <div>
+            <div className="animate-[fade-in_0.8s_ease-out_0.2s_both]">
               <h1 className="text-5xl font-bold text-white leading-tight mb-4 tracking-tight">
                 Gestión de
                 <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
@@ -84,11 +84,14 @@ export default function LoginPage() {
 
             {/* Feature cards */}
             <div className="grid grid-cols-2 gap-4">
-              {features.map((feature) => (
+              {features.map((feature, index) => (
                 <div 
                   key={feature.label}
                   className="group p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm
                              hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                  style={{
+                    animation: `fade-in 0.5s ease-out ${0.4 + index * 0.1}s both`
+                  }}
                 >
                   <feature.icon className="w-5 h-5 text-blue-300 mb-3" />
                   <div className="text-white font-semibold text-sm">{feature.label}</div>
@@ -98,7 +101,7 @@ export default function LoginPage() {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-8 pt-4">
+            <div className="flex gap-8 pt-4 animate-[fade-in_0.6s_ease-out_0.9s_both]">
               <div>
                 <div className="text-3xl font-bold text-white">40+</div>
                 <div className="text-white/50 text-sm">Tiendas activas</div>
@@ -117,7 +120,7 @@ export default function LoginPage() {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between animate-[fade-in_0.5s_ease-out_1s_both]">
             <div className="text-white/30 text-sm">© 2025 SchedPro · v1.0</div>
             <div className="text-white/30 text-xs">Creado por Leonidas Díaz</div>
           </div>
@@ -138,14 +141,14 @@ export default function LoginPage() {
 
         <div className="w-full max-w-md relative z-10">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-12">
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-12 animate-[scale-in_0.5s_ease-out]">
             <div className="p-3 rounded-2xl" style={{ background: 'hsl(var(--primary))' }}>
               <img src={logo} alt="Logo" className="h-8 object-contain brightness-0 invert" />
             </div>
           </div>
 
           {/* Welcome text */}
-          <div className="text-center lg:text-left mb-10">
+          <div className="text-center lg:text-left mb-10 animate-[fade-in_0.6s_ease-out_0.1s_both]">
             <h2 
               className="text-3xl md:text-4xl font-bold mb-3 tracking-tight"
               style={{ color: 'hsl(var(--foreground))' }}
@@ -158,7 +161,7 @@ export default function LoginPage() {
           </div>
 
           {/* Login form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 animate-[fade-in_0.6s_ease-out_0.3s_both]">
             <div className="space-y-2">
               <Label htmlFor="store" className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                 Tienda
@@ -259,7 +262,7 @@ export default function LoginPage() {
           </form>
 
           {/* Quick access - Demo */}
-          <div className="mt-8">
+          <div className="mt-8 animate-[fade-in_0.5s_ease-out_0.5s_both]">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t" style={{ borderColor: 'hsl(var(--border))' }} />
