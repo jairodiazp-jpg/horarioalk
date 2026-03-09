@@ -378,7 +378,7 @@ export default function Dashboard() {
           ) : (
             <>
               {/* Header Section */}
-              <div className="flex items-start justify-between mb-6 no-print">
+              <div key={activeDept} className="flex items-start justify-between mb-6 no-print animate-[fade-in_0.25s_ease-out]">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
                     <div 
@@ -493,7 +493,8 @@ export default function Dashboard() {
 
               {/* Content Area */}
               <div 
-                className="flex-1 overflow-auto rounded-xl border bg-card"
+                key={`${activeDept}-${showSummary}`}
+                className="flex-1 overflow-auto rounded-xl border bg-card animate-[fade-in_0.3s_ease-out]"
                 style={{ boxShadow: 'var(--card-shadow)' }}
                 data-tour="schedule-area"
               >
