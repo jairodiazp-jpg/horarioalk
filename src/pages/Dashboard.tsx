@@ -378,7 +378,7 @@ export default function Dashboard() {
           ) : (
             <>
               {/* Header Section */}
-              <div className="flex items-start justify-between mb-6 no-print">
+              <div key={activeDept} className="flex items-start justify-between mb-6 no-print animate-[fade-in_0.25s_ease-out]">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
                     <div 
