@@ -141,14 +141,14 @@ export default function LoginPage() {
 
         <div className="w-full max-w-md relative z-10">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-12">
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-12 animate-[scale-in_0.5s_ease-out]">
             <div className="p-3 rounded-2xl" style={{ background: 'hsl(var(--primary))' }}>
               <img src={logo} alt="Logo" className="h-8 object-contain brightness-0 invert" />
             </div>
           </div>
 
           {/* Welcome text */}
-          <div className="text-center lg:text-left mb-10">
+          <div className="text-center lg:text-left mb-10 animate-[fade-in_0.6s_ease-out_0.1s_both]">
             <h2 
               className="text-3xl md:text-4xl font-bold mb-3 tracking-tight"
               style={{ color: 'hsl(var(--foreground))' }}
