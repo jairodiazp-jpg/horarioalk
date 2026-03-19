@@ -160,7 +160,7 @@ export default function ShiftCell({ value, onChange, employeeId, day }: ShiftCel
     <div
       onClick={() => setEditing(true)}
       title="Clic para editar"
-      className={`text-xs font-bold px-1 py-1 rounded cursor-pointer select-none text-center transition-all hover:opacity-80 hover:ring-2 hover:ring-primary min-w-[44px] ${getShiftClass(value)}`}
+      className={`text-xs font-bold px-1 py-1 rounded cursor-pointer select-none text-center transition-all hover:opacity-80 hover:ring-2 hover:ring-primary min-w-[44px] ${getShiftClass(value)} ${justChanged ? 'animate-[shift-pop_0.4s_ease-out]' : ''}`}
     >
       {value || '—'}
     </div>

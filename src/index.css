@@ -129,6 +129,12 @@
 .shift-VC { background-color: hsl(var(--shift-vc-bg)); color: hsl(var(--shift-vc-fg)); font-weight: 600; }
 .shift-DF { background-color: hsl(215 14% 88%); color: hsl(215 20% 30%); font-weight: 500; }
 
+@keyframes shift-pop {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+  30% { transform: scale(1.2); box-shadow: 0 0 0 4px hsl(var(--primary) / 0.3); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+}
+
 /* Print styles */
 @media print {
   .no-print { display: none !important; }
