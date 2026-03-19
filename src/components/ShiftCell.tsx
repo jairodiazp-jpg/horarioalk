@@ -21,8 +21,19 @@ export default function ShiftCell({ value, onChange, employeeId, day }: ShiftCel
   const [editing, setEditing] = useState(false);
   const [inputVal, setInputVal] = useState(value);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [justChanged, setJustChanged] = useState(false);
   const cellRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevValueRef = useRef(value);
+
+  useEffect(() => {
+    if (prevValueRef.current !== value && prevValueRef.current !== '') {
+      setJustChanged(true);
+      const timer = setTimeout(() => setJustChanged(false), 500);
+      return () => clearTimeout(timer);
+    }
+    prevValueRef.current = value;
+  }, [value]);
 
   useEffect(() => {
     setInputVal(value);
@@ -149,7 +160,7 @@ export default function ShiftCell({ value, onChange, employeeId, day }: ShiftCel
     <div
       onClick={() => setEditing(true)}
       title="Clic para editar"
-      className={`text-xs font-bold px-1 py-1 rounded cursor-pointer select-none text-center transition-all hover:opacity-80 hover:ring-2 hover:ring-primary min-w-[44px] ${getShiftClass(value)}`}
+      className={`text-xs font-bold px-1 py-1 rounded cursor-pointer select-none text-center transition-all hover:opacity-80 hover:ring-2 hover:ring-primary min-w-[44px] ${getShiftClass(value)} ${justChanged ? 'animate-[shift-pop_0.4s_ease-out]' : ''}`}
     >
       {value || '—'}
     </div>
