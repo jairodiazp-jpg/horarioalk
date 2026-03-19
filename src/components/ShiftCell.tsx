@@ -21,8 +21,19 @@ export default function ShiftCell({ value, onChange, employeeId, day }: ShiftCel
   const [editing, setEditing] = useState(false);
   const [inputVal, setInputVal] = useState(value);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [justChanged, setJustChanged] = useState(false);
   const cellRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevValueRef = useRef(value);
+
+  useEffect(() => {
+    if (prevValueRef.current !== value && prevValueRef.current !== '') {
+      setJustChanged(true);
+      const timer = setTimeout(() => setJustChanged(false), 500);
+      return () => clearTimeout(timer);
+    }
+    prevValueRef.current = value;
+  }, [value]);
 
   useEffect(() => {
     setInputVal(value);
