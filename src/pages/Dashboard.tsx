@@ -15,7 +15,7 @@ import {
   LogOut, Download, Printer, Calendar,
   Users, RefreshCw, ChevronLeft, ChevronRight, UserCog, Loader2, Wand2, BarChart3, KeyRound, Lock, Sparkles } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import WelcomeTour from '@/components/WelcomeTour';
+
 
 const MONTHS_ES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -562,7 +562,7 @@ export default function Dashboard() {
         onClose={() => setShowChangePassword(false)}
       />
 
-      <WelcomeTour />
+      
     </div>
   );
 }
