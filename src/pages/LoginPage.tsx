@@ -122,7 +122,7 @@ export default function LoginPage() {
           {/* Footer */}
           <div className="flex items-center justify-between animate-[fade-in_0.5s_ease-out_1s_both]">
             <div className="text-white/30 text-sm">© 2025 SchedPro · v1.0</div>
-            <div className="text-white/30 text-xs">Creado por Leonidas Díaz</div>
+            <div className="text-white/30 text-xs">Creado por Jairo Leonidas Díaz · Zynera-Software</div>
           </div>
         </div>
       </div>
@@ -295,7 +295,7 @@ export default function LoginPage() {
           {/* Footer on mobile */}
           <div className="lg:hidden mt-8 text-center">
             <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              © 2025 SchedPro · Creado por Leonidas Díaz
+              Creado por Jairo Leonidas Díaz · Zynera-Software
             </p>
           </div>
         </div>
