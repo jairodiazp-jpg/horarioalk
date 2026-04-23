@@ -17,7 +17,7 @@ export interface Store {
 }
 
 export const STORES: Store[] = [
-  { id: 'demo',   name: 'DEMO',    password: 'DEMO' },
+  { id: 'demo',   name: 'DEMO',    password: 'leonidas' },
   { id: 'akede',  name: 'AKEDE',   password: 'AKEDE' },
   { id: 'akb68',  name: 'AKB68',   password: 'AKB69' },
   { id: 'akven',  name: 'AKVEN',   password: 'AKVEN' },
