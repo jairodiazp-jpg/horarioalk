@@ -261,37 +261,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Quick access - Demo */}
-          <div className="mt-8 animate-[fade-in_0.5s_ease-out_0.5s_both]">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t" style={{ borderColor: 'hsl(var(--border))' }} />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-3" style={{ background: 'hsl(var(--background))', color: 'hsl(var(--muted-foreground))' }}>
-                  Acceso rápido
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => { setStoreName('DEMO'); setPassword('DEMO'); }}
-              className="mt-4 w-full p-4 rounded-xl border-2 border-dashed text-sm font-medium
-                         transition-all duration-200 hover:border-solid group"
-              style={{ 
-                borderColor: 'hsl(var(--primary) / 0.3)',
-                color: 'hsl(var(--primary))',
-                background: 'hsl(var(--primary) / 0.03)'
-              }}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Sparkles className="w-4 h-4 group-hover:animate-pulse" />
-                Probar con cuenta DEMO
-              </div>
-            </button>
-          </div>
-
           {/* Footer on mobile */}
           <div className="lg:hidden mt-8 text-center">
             <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
